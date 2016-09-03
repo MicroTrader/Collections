@@ -93,101 +93,10 @@
 
 package com.sakrio.collections;
 
-import org.ObjectLayout.Intrinsic;
-import sun.misc.Contended;
-import sun.misc.Unsafe;
-
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedExceptionAction;
+import java.util.function.BiFunction;
 
 /**
- * Created by sirinath on 31/08/2016.
+ * Created by sirinath on 03/09/2016.
  */
-public abstract class AbstractCircularTimeSeries<S, T> {
-    private static final Unsafe UNSAFE;
-    private static long markerOffset = getFieldOffset(AbstractCircularTimeSeries.class, "marker");
-
-    static {
-        Unsafe unsafe = null;
-
-        try {
-            final PrivilegedExceptionAction<Unsafe> action = () -> {
-                final Field f = Unsafe.class.getDeclaredField("theUnsafe");
-                f.setAccessible(true);
-
-                return (Unsafe) f.get(null);
-            };
-
-            unsafe = AccessController.doPrivileged(action);
-        } catch (final Throwable t) {
-            throw new RuntimeException("Exception accessing Unsafe", t);
-        }
-
-        UNSAFE = unsafe;
-    }
-
-    @Intrinsic
-    private final S data;
-
-    private final long length;
-    private final boolean isPowerOf2;
-    private final long mask;
-
-    @Contended
-    private long marker = 0;
-
-    protected AbstractCircularTimeSeries(final long length, final BaseSupplier<S> instanceSupplier) {
-        this.length = length;
-        this.isPowerOf2 = (length & (length - 1)) == 0;
-        this.mask = isPowerOf2 ? (1 << (Long.SIZE - Long.numberOfLeadingZeros(length - 1))) : (length - 1);
-
-        data = instanceSupplier.apply("data", this);
-    }
-
-    private static long getFieldOffset(final Class<?> cls, final String field) {
-        try {
-            return UNSAFE.objectFieldOffset(cls.getField(field));
-        } catch (Throwable t) {
-            throw new RuntimeException("Error in accessing field: " + field + " in: " + cls, t);
-        }
-    }
-
-    private long roll(final long index) {
-        return isPowerOf2 ? index & mask : index > mask ? index - mask : index < 0 ? index + mask : index;
-    }
-
-    public final long getLength() {
-        return length;
-    }
-
-    public final S getData() {
-        return data;
-    }
-
-    protected abstract T getItAt(final long index);
-
-    protected abstract void setItAt(final long index, final T value);
-
-    public final T last(final long index) {
-        long theMarker = marker;
-        T theValue = getItAt(roll(theMarker - index));
-
-        while (theMarker != (theMarker = UNSAFE.getLongVolatile(this, markerOffset))) {
-            theValue = getItAt(roll(theMarker - index));
-        }
-
-        return theValue;
-    }
-
-    public void updateNext(final T value) {
-        long theMarker = marker;
-        long next = roll(theMarker + 1);
-        while (!UNSAFE.compareAndSwapLong(this, markerOffset, theMarker, next)) {
-            theMarker = UNSAFE.getLongVolatile(this, markerOffset);
-            next = roll(theMarker + 1);
-        }
-
-        setItAt(next, value);
-    }
+public abstract class BaseSupplier<R> implements BiFunction<String, Object, R> {
 }

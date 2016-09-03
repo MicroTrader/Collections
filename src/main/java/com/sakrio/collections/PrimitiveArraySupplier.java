@@ -93,33 +93,20 @@
 
 package com.sakrio.collections;
 
-import org.ObjectLayout.*;
-
-import java.lang.invoke.MethodHandles;
+import org.ObjectLayout.PrimitiveArrayBuilder;
 
 /**
- * Created by sirinath on 01/09/2016.
+ * Created by sirinath on 03/09/2016.
  */
-public class ObjectLayoutHelpers {
-    private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
+public final class PrimitiveArraySupplier<S> extends BaseSupplier<S> {
+    private final PrimitiveArrayBuilder primitiveArrayBuilder;
 
-    public static <S extends StructuredArray<T>, T> StructuredArrayModel<S, T> arrayModel(final long length) {
-        return new StructuredArrayModel<S, T>(length);
+    public PrimitiveArraySupplier(final PrimitiveArrayBuilder primitiveArrayBuilder) {
+        this.primitiveArrayBuilder = primitiveArrayBuilder;
     }
 
-    public static <T> CtorAndArgs<T> ctorAndArgs(final Class<T> instanceClass, final Class[] constructorArgTypes, final Object... args) {
-        return new CtorAndArgs<T>(instanceClass, constructorArgTypes, args);
-    }
-
-    public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> arrayBuilder(final StructuredArrayModel<S, T> model, final CtorAndArgs<S> arrayCtorAndArgs, final CtorAndArgs<T> elementCtorAndArgs) {
-        return new StructuredArrayBuilder<S, T>(model).arrayCtorAndArgs(arrayCtorAndArgs).elementCtorAndArgs(elementCtorAndArgs);
-    }
-
-    public static <S extends StructuredArray<T>, T> S constructWithin(final String fieldName, final Object containingObject, final StructuredArrayBuilder<S, T> arrayBuilder) {
-        return IntrinsicObjects.constructWithin(lookup, fieldName, containingObject, arrayBuilder);
-    }
-
-    public static <S> S constructWithin(final String fieldName, final Object containingObject, final CtorAndArgs<S> ctorAndArgs) {
-        return IntrinsicObjects.constructWithin(lookup, fieldName, containingObject, ctorAndArgs);
+    @Override
+    public final S apply(final String field, final Object containingObject) {
+        return IntrinsicHelpers.constructWithin(field, containingObject, primitiveArrayBuilder);
     }
 }

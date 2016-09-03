@@ -93,101 +93,45 @@
 
 package com.sakrio.collections;
 
-import org.ObjectLayout.Intrinsic;
-import sun.misc.Contended;
-import sun.misc.Unsafe;
+import org.ObjectLayout.*;
 
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedExceptionAction;
+import java.lang.invoke.MethodHandles;
 
 /**
- * Created by sirinath on 31/08/2016.
+ * Created by sirinath on 01/09/2016.
  */
-public abstract class AbstractCircularTimeSeries<S, T> {
-    private static final Unsafe UNSAFE;
-    private static long markerOffset = getFieldOffset(AbstractCircularTimeSeries.class, "marker");
+public class IntrinsicHelpers {
+    private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
-    static {
-        Unsafe unsafe = null;
-
-        try {
-            final PrivilegedExceptionAction<Unsafe> action = () -> {
-                final Field f = Unsafe.class.getDeclaredField("theUnsafe");
-                f.setAccessible(true);
-
-                return (Unsafe) f.get(null);
-            };
-
-            unsafe = AccessController.doPrivileged(action);
-        } catch (final Throwable t) {
-            throw new RuntimeException("Exception accessing Unsafe", t);
-        }
-
-        UNSAFE = unsafe;
+    public static <S extends StructuredArray<T>, T> StructuredArrayModel<S, T> arrayModel(final long length) {
+        return new StructuredArrayModel<S, T>(length);
     }
 
-    @Intrinsic
-    private final S data;
-
-    private final long length;
-    private final boolean isPowerOf2;
-    private final long mask;
-
-    @Contended
-    private long marker = 0;
-
-    protected AbstractCircularTimeSeries(final long length, final BaseSupplier<S> instanceSupplier) {
-        this.length = length;
-        this.isPowerOf2 = (length & (length - 1)) == 0;
-        this.mask = isPowerOf2 ? (1 << (Long.SIZE - Long.numberOfLeadingZeros(length - 1))) : (length - 1);
-
-        data = instanceSupplier.apply("data", this);
+    public static <T> CtorAndArgs<T> ctorAndArgs(final Class<T> instanceClass, final Class[] constructorArgTypes, final Object... args) {
+        return new CtorAndArgs<T>(instanceClass, constructorArgTypes, args);
     }
 
-    private static long getFieldOffset(final Class<?> cls, final String field) {
-        try {
-            return UNSAFE.objectFieldOffset(cls.getField(field));
-        } catch (Throwable t) {
-            throw new RuntimeException("Error in accessing field: " + field + " in: " + cls, t);
-        }
+    public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> arrayBuilder(final StructuredArrayModel<S, T> model, final CtorAndArgs<S> arrayCtorAndArgs, final CtorAndArgs<T> elementCtorAndArgs) {
+        return new StructuredArrayBuilder<S, T>(model).arrayCtorAndArgs(arrayCtorAndArgs).elementCtorAndArgs(elementCtorAndArgs);
     }
 
-    private long roll(final long index) {
-        return isPowerOf2 ? index & mask : index > mask ? index - mask : index < 0 ? index + mask : index;
+    public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> arrayBuilder(final StructuredArrayModel<S, T> model, final CtorAndArgs<S> arrayCtorAndArgs, final CtorAndArgsProvider<T> elementCtorAndArgsProvider) {
+        return new StructuredArrayBuilder<S, T>(model).arrayCtorAndArgs(arrayCtorAndArgs).elementCtorAndArgsProvider(elementCtorAndArgsProvider);
     }
 
-    public final long getLength() {
-        return length;
+    public static <T> T constructWithin(final String fieldName, final Object containingObject) {
+        return IntrinsicObjects.constructWithin(lookup, fieldName, containingObject);
     }
 
-    public final S getData() {
-        return data;
+    public static <S extends StructuredArray<T>, T> S constructWithin(final String fieldName, final Object containingObject, final StructuredArrayBuilder<S, T> arrayBuilder) {
+        return IntrinsicObjects.constructWithin(lookup, fieldName, containingObject, arrayBuilder);
     }
 
-    protected abstract T getItAt(final long index);
-
-    protected abstract void setItAt(final long index, final T value);
-
-    public final T last(final long index) {
-        long theMarker = marker;
-        T theValue = getItAt(roll(theMarker - index));
-
-        while (theMarker != (theMarker = UNSAFE.getLongVolatile(this, markerOffset))) {
-            theValue = getItAt(roll(theMarker - index));
-        }
-
-        return theValue;
+    public static <T> T constructWithin(final String fieldName, final Object containingObject, final CtorAndArgs<T> ctorAndArgs) {
+        return IntrinsicObjects.constructWithin(lookup, fieldName, containingObject, ctorAndArgs);
     }
 
-    public void updateNext(final T value) {
-        long theMarker = marker;
-        long next = roll(theMarker + 1);
-        while (!UNSAFE.compareAndSwapLong(this, markerOffset, theMarker, next)) {
-            theMarker = UNSAFE.getLongVolatile(this, markerOffset);
-            next = roll(theMarker + 1);
-        }
-
-        setItAt(next, value);
+    public static <T> T constructWithin(final String fieldName, final Object containingObject, final PrimitiveArrayBuilder arrayBuilder) {
+        return IntrinsicObjects.constructWithin(lookup, fieldName, containingObject, arrayBuilder);
     }
 }
