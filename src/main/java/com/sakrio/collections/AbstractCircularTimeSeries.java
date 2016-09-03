@@ -137,7 +137,7 @@ public abstract class AbstractCircularTimeSeries<S, T> {
     @Contended
     private long marker = 0;
 
-    protected AbstractCircularTimeSeries(final long length, final BaseSupplier<S> instanceSupplier) {
+    protected <U extends BaseSupplier<S>> AbstractCircularTimeSeries(final long length, final U instanceSupplier) {
         this.length = length;
         this.isPowerOf2 = (length & (length - 1)) == 0;
         this.mask = isPowerOf2 ? (1 << (Long.SIZE - Long.numberOfLeadingZeros(length - 1))) : (length - 1);
