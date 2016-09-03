@@ -1,0 +1,26 @@
+language: java
+sudo: false
+
+jdk:
+  - oraclejdk8
+
+os:
+  - linux
+  - osx
+
+env:
+  - ARCH=x86_64
+  - ARCH=i686
+
+before_install:
+  - pip install --user codecov
+  - chmod +x gradlew
+  - chmod +x codecov
+
+script:
+  - ./gradlew build --stacktrace --info --debug
+
+after_success:
+  - ./gradlew jacocoTestReport coveralls --stacktrace --info --debug
+  - codecov
+  - ./gradlew --stop
