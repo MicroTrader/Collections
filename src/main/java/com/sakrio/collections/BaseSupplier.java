@@ -98,5 +98,5 @@ import java.util.function.BiFunction;
 /**
  * Created by sirinath on 03/09/2016.
  */
-public abstract class BaseSupplier<R> implements BiFunction<String, Object, R> {
+abstract class BaseSupplier<R> implements BiFunction<String, Object, R> {
 }
