@@ -91,43 +91,99 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+package com.sakrio.utils.box.immutable;
 
-defaultTasks 'clean', 'build', 'jar'
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.box.BoxOnce;
+import com.sakrio.utils.box.mutable.MutableDouble;
+import sun.misc.Unsafe;
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+/**
+ * Wrapper class
+ *
+ * @author sirinath
+ */
+@SuppressWarnings("serial")
+public final class ImmutableDouble extends Number
+        implements BoxOnce<ImmutableDouble> {
+    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(ImmutableDouble.class, "value");
+    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    /**
+     * Value
+     */
+    private final double value;
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
+    /**
+     * @param i Parameter
+     */
+    public ImmutableDouble(final double i) {
+        value = i;
+    }
 
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'com.esotericsoftware:reflectasm:1.11.3'
-    compile 'com.googlecode.cqengine:cqengine: 2.7.1'
+    @Override
+    public final String toString() {
+        return String.valueOf(value);
+    }
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+    public final double getValue() {
+        return value;
+    }
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+    public final double get() {
+        return value;
+    }
+
+    public final double getValueVolatile() {
+        return UNSAFE.getDoubleVolatile(this, valueFieldOffset);
+    }
+
+    @Override
+    public final boolean equals(Object other) {
+        if (other instanceof ImmutableDouble)
+            return value == ((ImmutableDouble) other).getValue();
+        else if (other instanceof MutableDouble)
+            return value == ((MutableDouble) other).getValue();
+        else if (other instanceof Double)
+            return ((Double) other).doubleValue() == value;
+        else
+            return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Double.hashCode(value);
+    }
+
+    @Override
+    public final int compareTo(final ImmutableDouble other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    public final int compareTo(final MutableDouble other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    // Others
+
+    @Override
+    public final int intValue() {
+        return (int) value;
+    }
+
+    @Override
+    public final long longValue() {
+        return (long) value;
+    }
+
+    @Override
+    public final float floatValue() {
+        return (float) value;
+    }
+
+    @Override
+    public final double doubleValue() {
+        return value;
     }
 }

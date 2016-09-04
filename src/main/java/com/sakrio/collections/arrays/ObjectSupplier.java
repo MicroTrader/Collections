@@ -91,43 +91,29 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
+package com.sakrio.collections.arrays;
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+import org.ObjectLayout.CtorAndArgs;
 
-defaultTasks 'clean', 'build', 'jar'
+/**
+ * Created by sirinath on 03/09/2016.
+ */
+public final class ObjectSupplier<U> extends BaseSupplier<U> {
+    private final CtorAndArgs<U> ctorAndArgs;
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+    public ObjectSupplier(final CtorAndArgs<U> ctorAndArgs) {
+        this.ctorAndArgs = ctorAndArgs;
+    }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    public ObjectSupplier() {
+        this.ctorAndArgs = null;
+    }
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
-
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'com.esotericsoftware:reflectasm:1.11.3'
-    compile 'com.googlecode.cqengine:cqengine: 2.7.1'
-
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+    @Override
+    public final U apply(final String field, final Object containingObject) {
+        if (ctorAndArgs == null)
+            return IntrinsicHelpers.constructWithin(field, containingObject);
+        else
+            return IntrinsicHelpers.constructWithin(field, containingObject, ctorAndArgs);
     }
 }

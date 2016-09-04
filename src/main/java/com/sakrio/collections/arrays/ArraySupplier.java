@@ -91,43 +91,10 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
+package com.sakrio.collections.arrays;
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
-
-defaultTasks 'clean', 'build', 'jar'
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
-
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'com.esotericsoftware:reflectasm:1.11.3'
-    compile 'com.googlecode.cqengine:cqengine: 2.7.1'
-
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
-    }
+/**
+ * Created by sirinath on 04/09/2016.
+ */
+public abstract class ArraySupplier<U> extends BaseSupplier<U> {
 }

@@ -91,29 +91,98 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections;
 
-import org.ObjectLayout.CtorAndArgs;
+package com.sakrio.utils.box.immutable;
+
+import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.box.BoxOnce;
+import com.sakrio.utils.box.mutable.MutableLong;
+import sun.misc.Unsafe;
 
 /**
- * Created by sirinath on 03/09/2016.
+ * Wrapper class
+ *
+ * @author sirinath
  */
-public final class ObjectSupplier<U> extends BaseSupplier<U> {
-    private final CtorAndArgs<U> ctorAndArgs;
+@SuppressWarnings("serial")
+public final class ImmutableLong extends Number
+        implements BoxOnce<ImmutableLong> {
+    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(ImmutableLong.class, "value");
+    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    /**
+     * Value
+     */
+    private final long value;
 
-    public ObjectSupplier(final CtorAndArgs<U> ctorAndArgs) {
-        this.ctorAndArgs = ctorAndArgs;
-    }
-
-    public ObjectSupplier() {
-        this.ctorAndArgs = null;
+    /**
+     * @param i Parameter
+     */
+    public ImmutableLong(final long i) {
+        value = i;
     }
 
     @Override
-    public final U apply(final String field, final Object containingObject) {
-        if (ctorAndArgs == null)
-            return IntrinsicHelpers.constructWithin(field, containingObject);
+    public final String toString() {
+        return String.valueOf(value);
+    }
+
+    public final long getValue() {
+        return value;
+    }
+
+    public final long get() {
+        return value;
+    }
+
+    public final long getValueVolatile() {
+        return UNSAFE.getLongVolatile(this, valueFieldOffset);
+    }
+
+    @Override
+    public final boolean equals(Object other) {
+        if (other instanceof ImmutableLong)
+            return value == ((ImmutableLong) other).getValue();
+        else if (other instanceof MutableLong)
+            return value == ((MutableLong) other).getValue();
+        else if (other instanceof Long)
+            return ((Long) other).longValue() == value;
         else
-            return IntrinsicHelpers.constructWithin(field, containingObject, ctorAndArgs);
+            return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Long.hashCode(value);
+    }
+
+    @Override
+    public final int compareTo(final ImmutableLong other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    public final int compareTo(final MutableLong other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    // Others
+
+    @Override
+    public final int intValue() {
+        return (int) value;
+    }
+
+    @Override
+    public final long longValue() {
+        return value;
+    }
+
+    @Override
+    public final float floatValue() {
+        return (float) value;
+    }
+
+    @Override
+    public final double doubleValue() {
+        return (double) value;
     }
 }

@@ -91,10 +91,99 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections;
+
+package com.sakrio.utils.box.immutable;
+
+
+import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.box.BoxOnce;
+import com.sakrio.utils.box.mutable.MutableChar;
+import sun.misc.Unsafe;
 
 /**
- * Created by HP on 04/09/2016.
+ * Wrapper class
+ *
+ * @author sirinath
  */
-public abstract class ArraySupplier<U> extends BaseSupplier<U> {
+@SuppressWarnings("serial")
+public final class ImmutableChar extends Number
+        implements BoxOnce<ImmutableChar> {
+    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(ImmutableChar.class, "value");
+    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    /**
+     * Value
+     */
+    private final char value;
+
+    /**
+     * @param i Parameter
+     */
+    public ImmutableChar(final char i) {
+        value = i;
+    }
+
+    @Override
+    public final String toString() {
+        return String.valueOf(value);
+    }
+
+    public final char getValue() {
+        return value;
+    }
+
+    public final char get() {
+        return value;
+    }
+
+    public final char getValueVolatile() {
+        return UNSAFE.getCharVolatile(this, valueFieldOffset);
+    }
+
+    @Override
+    public final boolean equals(Object other) {
+        if (other instanceof ImmutableChar)
+            return value == ((ImmutableChar) other).getValue();
+        else if (other instanceof MutableChar)
+            return value == ((MutableChar) other).getValue();
+        else if (other instanceof Character)
+            return ((Character) other).charValue() == value;
+        else
+            return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Character.hashCode(value);
+    }
+
+    @Override
+    public final int compareTo(final ImmutableChar other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    public final int compareTo(final MutableChar other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    // Others
+
+    @Override
+    public final int intValue() {
+        return (int) value;
+    }
+
+    @Override
+    public final long longValue() {
+        return (long) value;
+    }
+
+    @Override
+    public final float floatValue() {
+        return (float) value;
+    }
+
+    @Override
+    public final double doubleValue() {
+        return (double) value;
+    }
 }

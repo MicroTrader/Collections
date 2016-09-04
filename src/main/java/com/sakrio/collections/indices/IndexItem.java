@@ -91,27 +91,10 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections;
-
-import org.ObjectLayout.PrimitiveArrayBuilder;
+package com.sakrio.collections.indices;
 
 /**
- * Created by sirinath on 03/09/2016.
+ * Created by sirinath on 04/09/2016.
  */
-public final class PrimitiveArraySupplier<S> extends ArraySupplier<S> {
-    private final PrimitiveArrayBuilder primitiveArrayBuilder;
-
-    public PrimitiveArraySupplier(final PrimitiveArrayBuilder primitiveArrayBuilder) {
-        this.primitiveArrayBuilder = primitiveArrayBuilder;
-    }
-
-    @Override
-    public final S apply(final String field, final Object containingObject) {
-        return IntrinsicHelpers.constructWithin(field, containingObject, primitiveArrayBuilder);
-    }
-
-    @Override
-    public long getLength() {
-        return primitiveArrayBuilder.getArrayModel().getLength();
-    }
+public class IndexItem {
 }

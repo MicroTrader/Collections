@@ -91,43 +91,143 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
+package com.sakrio.collections.arrays;
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+import com.esotericsoftware.reflectasm.FieldAccess;
+import com.esotericsoftware.reflectasm.MethodAccess;
+import org.ObjectLayout.Intrinsic;
+import sun.misc.Contended;
+import sun.misc.Unsafe;
 
-defaultTasks 'clean', 'build', 'jar'
+import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+/**
+ * Created by sirinath on 31/08/2016.
+ */
+public abstract class AbstractCircularTimeSeries<S, T> {
+    private static final Unsafe UNSAFE;
+    private static long markerOffset = getFieldOffset(AbstractCircularTimeSeries.class, "marker");
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    static {
+        Unsafe unsafe = null;
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
+        try {
+            final PrivilegedExceptionAction<Unsafe> action = () -> {
+                final Field f = Unsafe.class.getDeclaredField("theUnsafe");
+                f.setAccessible(true);
 
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'com.esotericsoftware:reflectasm:1.11.3'
-    compile 'com.googlecode.cqengine:cqengine: 2.7.1'
+                return (Unsafe) f.get(null);
+            };
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+            unsafe = AccessController.doPrivileged(action);
+        } catch (final Throwable t) {
+            throw new RuntimeException("Exception accessing Unsafe", t);
+        }
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+        UNSAFE = unsafe;
+    }
+
+    @Intrinsic
+    private final S data;
+
+    private final long length;
+    private final boolean isPowerOf2;
+    private final long mask;
+
+    @Contended
+    private long marker = 0;
+
+    protected <U extends BaseSupplier<S>> AbstractCircularTimeSeries(final U instanceSupplier) {
+        data = instanceSupplier.apply("data", this);
+
+        final Class<?>[] clazz = {data.getClass(), instanceSupplier.getClass()};
+        final MethodAccess[] methodAccessArray = {MethodAccess.get(clazz[0]), MethodAccess.get(clazz[1])};
+        final FieldAccess[] fieldAccessArray = {FieldAccess.get(clazz[0]), FieldAccess.get(clazz[1])};
+
+        long theLength = -1;
+
+        final String[] names = {"length", "size", "count", "items"};
+
+        outerLoop:
+        for (String name : names) {
+            for (int i = 0; i < 2; i++) {
+                final MethodAccess methodAccess = methodAccessArray[i];
+                final FieldAccess fieldAccess = fieldAccessArray[i];
+
+                try {
+                    theLength = (long) methodAccess.invoke(data, "get" + name.substring(0, 1).toUpperCase() + name.substring(1));
+                    break outerLoop;
+                } catch (Throwable t) {
+                }
+
+                try {
+                    theLength = (long) methodAccess.invoke(data, name);
+                    break outerLoop;
+                } catch (Throwable t) {
+                }
+
+                try {
+                    theLength = (long) fieldAccess.get(data, name);
+                    break outerLoop;
+                } catch (Throwable t) {
+                }
+            }
+        }
+
+        if (theLength == -1)
+            throw new IllegalStateException("Cannot deduce the array length! The data field or instanceSupplier parameter should contain accessible getters and / or fields for: " + Arrays.toString(names));
+
+        this.length = theLength;
+        this.isPowerOf2 = (length & (length - 1)) == 0;
+        this.mask = isPowerOf2 ? (1 << (Long.SIZE - Long.numberOfLeadingZeros(length - 1))) : (length - 1);
+    }
+
+    private static long getFieldOffset(final Class<?> cls, final String field) {
+        try {
+            return UNSAFE.objectFieldOffset(cls.getField(field));
+        } catch (Throwable t) {
+            throw new RuntimeException("Error in accessing field: " + field + " in: " + cls, t);
+        }
+    }
+
+    private long roll(final long index) {
+        return isPowerOf2 ? index & mask : index > mask ? index - mask : index < 0 ? index + mask : index;
+    }
+
+    public final long getLength() {
+        return length;
+    }
+
+    public final S getData() {
+        return data;
+    }
+
+    protected abstract T getItAt(final long index);
+
+    protected abstract void setItAt(final long index, final T value);
+
+    public final T last(final long index) {
+        long theMarker = marker;
+        T theValue = getItAt(roll(theMarker - index));
+
+        while (theMarker != (theMarker = UNSAFE.getLongVolatile(this, markerOffset))) {
+            theValue = getItAt(roll(theMarker - index));
+        }
+
+        return theValue;
+    }
+
+    public void updateNext(final T value) {
+        long theMarker = marker;
+        long next = roll(theMarker + 1);
+        while (!UNSAFE.compareAndSwapLong(this, markerOffset, theMarker, next)) {
+            theMarker = UNSAFE.getLongVolatile(this, markerOffset);
+            next = roll(theMarker + 1);
+        }
+
+        setItAt(next, value);
     }
 }

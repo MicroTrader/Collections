@@ -91,43 +91,138 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+package com.sakrio.utils.box.mutable;
 
-defaultTasks 'clean', 'build', 'jar'
+import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.box.BoxOnce;
+import com.sakrio.utils.box.immutable.ImmutableShort;
+import sun.misc.Unsafe;
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+/**
+ * Wrapper class
+ *
+ * @author sirinath
+ */
+@SuppressWarnings("serial")
+public final class MutableShort extends Number
+        implements BoxOnce<MutableShort> {
+    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableShort.class, "value");
+    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    /**
+     * Value
+     */
+    private short value;
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    /**
+     * @param i Parameter
+     */
+    public MutableShort(final short i) {
+        value = i;
+    }
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
+    public final static short pack(final byte... values) {
+        short value = 0;
 
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'com.esotericsoftware:reflectasm:1.11.3'
-    compile 'com.googlecode.cqengine:cqengine: 2.7.1'
+        switch (values.length) {
+            default:
+            case 2:
+                value += values[1] << Byte.SIZE;
+            case 1:
+                value += values[0];
+            case 0:
+        }
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+        return value;
+    }
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+    public final static byte[] unpack(final byte[] result, final short value) {
+        switch (result.length) {
+            default:
+            case 2:
+                result[1] = (byte) (value & (0xFF00 >> Byte.SIZE));
+            case 1:
+                result[0] = (byte) (value & 0x00FF);
+            case 0:
+        }
+
+        return result;
+    }
+
+    @Override
+    public final String toString() {
+        return String.valueOf(value);
+    }
+
+    public final short getValue() {
+        return value;
+    }
+
+    public final void setValue(final short value) {
+        this.value = value;
+    }
+
+    public final short get() {
+        return value;
+    }
+
+    public final short getValueVolatile() {
+        return UNSAFE.getShortVolatile(this, valueFieldOffset);
+    }
+
+    public final void setValueVolatile(final short value) {
+        UNSAFE.putShortVolatile(this, valueFieldOffset, value);
+    }
+
+    public final void set(final short value) {
+        this.value = value;
+    }
+
+    @Override
+    public final boolean equals(Object other) {
+        if (other instanceof MutableShort)
+            return value == ((MutableShort) other).getValue();
+        else if (other instanceof ImmutableShort)
+            return value == ((ImmutableShort) other).getValue();
+        else if (other instanceof Short)
+            return ((Short) other).shortValue() == value;
+        else
+            return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Short.hashCode(value);
+    }
+
+    @Override
+    public final int compareTo(final MutableShort other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    public final int compareTo(final ImmutableShort other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    // Others
+
+    @Override
+    public final int intValue() {
+        return (int) value;
+    }
+
+    @Override
+    public final long longValue() {
+        return (long) value;
+    }
+
+    @Override
+    public final float floatValue() {
+        return (float) value;
+    }
+
+    @Override
+    public final double doubleValue() {
+        return (double) value;
     }
 }

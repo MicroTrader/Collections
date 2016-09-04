@@ -91,43 +91,111 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+package com.sakrio.utils.box.mutable;
 
-defaultTasks 'clean', 'build', 'jar'
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.box.BoxOnce;
+import com.sakrio.utils.box.immutable.ImmutableEnum;
+import sun.misc.Unsafe;
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+/**
+ * Wrapper class
+ *
+ * @author sirinath
+ */
+@SuppressWarnings("serial")
+public final class MutableEnum<T extends Enum<T>> extends Number
+        implements BoxOnce<MutableEnum<T>> {
+    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableEnum.class, "value");
+    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    /**
+     * Value
+     */
+    private Enum value;
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
+    /**
+     * @param i Parameter
+     */
+    public MutableEnum(final Enum i) {
+        value = i;
+    }
 
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'com.esotericsoftware:reflectasm:1.11.3'
-    compile 'com.googlecode.cqengine:cqengine: 2.7.1'
+    @Override
+    public final String toString() {
+        return String.valueOf(value);
+    }
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+    public final Enum getValue() {
+        return value;
+    }
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+    public final void setValue(final Enum value) {
+        this.value = value;
+    }
+
+    public final Enum get() {
+        return value;
+    }
+
+    public final Enum getValueVolatile() {
+        return (Enum) UNSAFE.getObjectVolatile(this, valueFieldOffset);
+    }
+
+    public final void setValueVolatile(final Enum value) {
+        UNSAFE.putObjectVolatile(this, valueFieldOffset, value);
+    }
+
+    public final void set(final Enum value) {
+        this.value = value;
+    }
+
+    @Override
+    public final boolean equals(Object other) {
+        if (other instanceof MutableEnum)
+            return value == ((MutableEnum<T>) other).getValue();
+        else if (other instanceof ImmutableEnum)
+            return value == ((ImmutableEnum) other).getValue();
+        else if (other instanceof Enum)
+            return other.equals(value);
+        else
+            return false;
+    }
+
+    @Override
+    public final int compareTo(final MutableEnum<T> other) {
+        return value.compareTo(other.getValue());
+    }
+
+    public final int compareTo(final ImmutableEnum<T> other) {
+        return value.compareTo(other.getValue());
+    }
+
+    // Enum
+
+    @Override
+    public final int intValue() {
+        return value.ordinal();
+    }
+
+    @Override
+    public final long longValue() {
+        return (long) value.ordinal();
+    }
+
+    @Override
+    public final float floatValue() {
+        return (float) value.ordinal();
+    }
+
+    @Override
+    public final double doubleValue() {
+        return (double) value.ordinal();
+    }
+
+    @Override
+    public final int hashCode() {
+        return value.hashCode();
     }
 }

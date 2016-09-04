@@ -91,43 +91,86 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
+package com.sakrio.utils.box;
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+import com.sakrio.utils.box.mutable.*;
 
-defaultTasks 'clean', 'build', 'jar'
+/**
+ * Help instantiate boxing
+ *
+ * @author sirinath
+ */
+public class MutableUtils {
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static MutableBoolean boxed(final boolean v) {
+        return new MutableBoolean(v);
+    }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static MutableByte boxed(final byte v) {
+        return new MutableByte(v);
+    }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static MutableChar boxed(final char v) {
+        return new MutableChar(v);
+    }
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static MutableDouble boxed(final double v) {
+        return new MutableDouble(v);
+    }
 
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'com.esotericsoftware:reflectasm:1.11.3'
-    compile 'com.googlecode.cqengine:cqengine: 2.7.1'
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static MutableFloat boxed(final float v) {
+        return new MutableFloat(v);
+    }
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static MutableInt boxed(final int v) {
+        return new MutableInt(v);
+    }
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static MutableLong boxed(final long v) {
+        return new MutableLong(v);
+    }
+
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static MutableShort boxed(final short v) {
+        return new MutableShort(v);
+    }
+
+    /**
+     * @param <T> Enum type
+     * @param v   value to be boxed
+     * @return boxed value
+     */
+    public static <T extends Enum<T>> MutableEnum<T> boxed(final T v) {
+        return new MutableEnum<T>(v);
     }
 }

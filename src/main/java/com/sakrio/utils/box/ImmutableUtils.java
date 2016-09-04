@@ -91,43 +91,87 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
+package com.sakrio.utils.box;
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
 
-defaultTasks 'clean', 'build', 'jar'
+import com.sakrio.utils.box.immutable.*;
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+/**
+ * Help instantiate boxing
+ *
+ * @author sirinath
+ */
+public class ImmutableUtils {
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static ImmutableBoolean boxed(final boolean v) {
+        return new ImmutableBoolean(v);
+    }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static ImmutableByte boxed(final byte v) {
+        return new ImmutableByte(v);
+    }
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static ImmutableChar boxed(final char v) {
+        return new ImmutableChar(v);
+    }
 
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'com.esotericsoftware:reflectasm:1.11.3'
-    compile 'com.googlecode.cqengine:cqengine: 2.7.1'
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static ImmutableDouble boxed(final double v) {
+        return new ImmutableDouble(v);
+    }
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static ImmutableFloat boxed(final float v) {
+        return new ImmutableFloat(v);
+    }
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static ImmutableInt boxed(final int v) {
+        return new ImmutableInt(v);
+    }
+
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static ImmutableLong boxed(final long v) {
+        return new ImmutableLong(v);
+    }
+
+    /**
+     * @param v value to be boxed
+     * @return boxed value
+     */
+    public static ImmutableShort boxed(final short v) {
+        return new ImmutableShort(v);
+    }
+
+    /**
+     * @param <T> Enum type
+     * @param v   value to be boxed
+     * @return boxed value
+     */
+    public static <T extends Enum<T>> ImmutableEnum<T> boxed(final T v) {
+        return new ImmutableEnum<T>(v);
     }
 }

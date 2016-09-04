@@ -91,13 +91,111 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections;
 
-import java.util.function.BiFunction;
+package com.sakrio.utils.box.mutable;
+
+
+import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.box.BoxOnce;
+import com.sakrio.utils.box.immutable.ImmutableBoolean;
+import sun.misc.Unsafe;
 
 /**
- * Created by sirinath on 03/09/2016.
+ * Wrapper class
+ *
+ * @author sirinath
  */
-abstract class BaseSupplier<R> implements BiFunction<String, Object, R> {
-    public abstract long getLength();
+@SuppressWarnings("serial")
+public final class MutableBoolean extends Number
+        implements BoxOnce<MutableBoolean> {
+    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableBoolean.class, "value");
+    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    /**
+     * Value
+     */
+    private boolean value;
+
+    /**
+     * @param i Parameter
+     */
+    public MutableBoolean(final boolean i) {
+        value = i;
+    }
+
+    @Override
+    public final String toString() {
+        return String.valueOf(value);
+    }
+
+    public final boolean getValue() {
+        return value;
+    }
+
+    public final void setValue(final boolean value) {
+        this.value = value;
+    }
+
+    public final boolean get() {
+        return value;
+    }
+
+    public final boolean getValueVolatile() {
+        return UNSAFE.getBooleanVolatile(this, valueFieldOffset);
+    }
+
+    public final void setValueVolatile(final boolean value) {
+        UNSAFE.putBooleanVolatile(this, valueFieldOffset, value);
+    }
+
+    public final void set(final boolean value) {
+        this.value = value;
+    }
+
+    @Override
+    public final boolean equals(Object other) {
+        if (other instanceof MutableBoolean)
+            return value == ((MutableBoolean) other).getValue();
+        else if (other instanceof ImmutableBoolean)
+            return value == ((ImmutableBoolean) other).getValue();
+        else if (other instanceof Boolean)
+            return ((Boolean) other).booleanValue() == value;
+        else
+            return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Boolean.hashCode(value);
+    }
+
+    @Override
+    public final int compareTo(final MutableBoolean other) {
+        return value == other.getValue() ? 0 : (other.getValue() ? -1 : 1);
+    }
+
+    public final int compareTo(final ImmutableBoolean other) {
+        return value == other.getValue() ? 0 : (other.getValue() ? -1 : 1);
+    }
+
+    // Boolean
+
+    @Override
+    public final int intValue() {
+        return value ? 1 : 0;
+    }
+
+    @Override
+    public final long longValue() {
+        return value ? 1L : 0L;
+    }
+
+    @Override
+    public final float floatValue() {
+        return value ? 1.0F : 0.0F;
+    }
+
+    @Override
+    public final double doubleValue() {
+        return value ? 1.0D : 0.0D;
+    }
 }

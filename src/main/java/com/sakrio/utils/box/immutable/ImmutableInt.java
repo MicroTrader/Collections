@@ -91,43 +91,98 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+package com.sakrio.utils.box.immutable;
 
-defaultTasks 'clean', 'build', 'jar'
+import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.box.BoxOnce;
+import com.sakrio.utils.box.mutable.MutableInt;
+import sun.misc.Unsafe;
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+/**
+ * Wrapper class
+ *
+ * @author sirinath
+ */
+@SuppressWarnings("serial")
+public final class ImmutableInt extends Number
+        implements BoxOnce<ImmutableInt> {
+    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(ImmutableInt.class, "value");
+    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    /**
+     * Value
+     */
+    private final int value;
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    /**
+     * @param i Parameter
+     */
+    public ImmutableInt(final int i) {
+        value = i;
+    }
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
+    @Override
+    public final String toString() {
+        return String.valueOf(value);
+    }
 
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'com.esotericsoftware:reflectasm:1.11.3'
-    compile 'com.googlecode.cqengine:cqengine: 2.7.1'
+    public final int getValue() {
+        return value;
+    }
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+    public final int get() {
+        return value;
+    }
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+    public final int getValueVolatile() {
+        return UNSAFE.getIntVolatile(this, valueFieldOffset);
+    }
+
+    @Override
+    public final boolean equals(Object other) {
+        if (other instanceof ImmutableInt)
+            return value == ((ImmutableInt) other).getValue();
+        else if (other instanceof MutableInt)
+            return value == ((MutableInt) other).getValue();
+        else if (other instanceof Integer)
+            return ((Integer) other).intValue() == value;
+        else
+            return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Integer.hashCode(value);
+    }
+
+    @Override
+    public final int compareTo(final ImmutableInt other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    public final int compareTo(final MutableInt other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    // Others
+
+    @Override
+    public final int intValue() {
+        return value;
+    }
+
+    @Override
+    public final long longValue() {
+        return (long) value;
+    }
+
+    @Override
+    public final float floatValue() {
+        return (float) value;
+    }
+
+    @Override
+    public final double doubleValue() {
+        return (double) value;
     }
 }

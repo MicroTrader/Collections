@@ -91,7 +91,7 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections;
+package com.sakrio.collections.arrays;
 
 import org.ObjectLayout.*;
 

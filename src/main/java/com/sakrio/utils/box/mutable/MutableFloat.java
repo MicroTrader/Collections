@@ -91,43 +91,131 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+package com.sakrio.utils.box.mutable;
 
-defaultTasks 'clean', 'build', 'jar'
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.box.BoxOnce;
+import com.sakrio.utils.box.immutable.ImmutableFloat;
+import sun.misc.Unsafe;
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+/**
+ * Wrapper class
+ *
+ * @author sirinath
+ */
+@SuppressWarnings("serial")
+public final class MutableFloat extends Number
+        implements BoxOnce<MutableFloat> {
+    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableFloat.class, "value");
+    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    /**
+     * Value
+     */
+    private float value;
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
+    /**
+     * @param i Parameter
+     */
+    public MutableFloat(final float i) {
+        value = i;
+    }
 
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'com.esotericsoftware:reflectasm:1.11.3'
-    compile 'com.googlecode.cqengine:cqengine: 2.7.1'
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+    @Override
+    public final String toString() {
+        return String.valueOf(value);
+    }
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+    public final float getValue() {
+        return value;
+    }
+
+    public final void setValue(final float value) {
+        this.value = value;
+    }
+
+    public final float get() {
+        return value;
+    }
+
+    public final float getValueVolatile() {
+        return UNSAFE.getFloatVolatile(this, valueFieldOffset);
+    }
+
+    public final void setValueVolatile(final float value) {
+        UNSAFE.putFloatVolatile(this, valueFieldOffset, value);
+    }
+
+    public final void set(final float value) {
+        this.value = value;
+    }
+
+    public final void setValueOrdered(
+            final float value) {
+        UNSAFE.putOrderedInt(this, valueFieldOffset, Float.floatToRawIntBits(value));
+    }
+
+    public final boolean compareAndSwapValue(final float expected,
+                                             final float value) {
+        return UNSAFE.compareAndSwapInt(this,
+                valueFieldOffset,
+                Float.floatToRawIntBits(expected), Float.floatToRawIntBits(value));
+    }
+
+    public final float getAndSetValue(
+            final float value) {
+        return Float.intBitsToFloat(UNSAFE.getAndSetInt(this,
+                valueFieldOffset,
+                Float.floatToRawIntBits(value)));
+    }
+
+    @Override
+    public final boolean equals(Object other) {
+        if (other instanceof MutableFloat)
+            return value == ((MutableFloat) other).getValue();
+        else if (other instanceof ImmutableFloat)
+            return value == ((ImmutableFloat) other).getValue();
+        else if (other instanceof Float)
+            return ((Float) other).floatValue() == value;
+        else
+            return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Float.hashCode(value);
+    }
+
+    @Override
+    public final int compareTo(final MutableFloat other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    public final int compareTo(final ImmutableFloat other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    // Others
+
+    @Override
+    public final int intValue() {
+        return (int) value;
+    }
+
+    @Override
+    public final long longValue() {
+        return (long) value;
+    }
+
+    @Override
+    public final float floatValue() {
+        return value;
+    }
+
+    @Override
+    public final double doubleValue() {
+        return (double) value;
     }
 }

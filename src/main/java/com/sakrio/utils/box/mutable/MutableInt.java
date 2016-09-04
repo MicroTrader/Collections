@@ -91,143 +91,194 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections;
 
-import com.esotericsoftware.reflectasm.FieldAccess;
-import com.esotericsoftware.reflectasm.MethodAccess;
-import org.ObjectLayout.Intrinsic;
-import sun.misc.Contended;
+package com.sakrio.utils.box.mutable;
+
+
+import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.box.BoxOnce;
+import com.sakrio.utils.box.immutable.ImmutableInt;
 import sun.misc.Unsafe;
 
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedExceptionAction;
-import java.util.Arrays;
-
 /**
- * Created by sirinath on 31/08/2016.
+ * Wrapper class
+ *
+ * @author sirinath
  */
-public abstract class AbstractCircularTimeSeries<S, T> {
-    private static final Unsafe UNSAFE;
-    private static long markerOffset = getFieldOffset(AbstractCircularTimeSeries.class, "marker");
+@SuppressWarnings("serial")
+public final class MutableInt extends Number
+        implements BoxOnce<MutableInt> {
+    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableInt.class, "value");
+    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    /**
+     * Value
+     */
+    private int value;
 
-    static {
-        Unsafe unsafe = null;
+    /**
+     * @param i Parameter
+     */
+    public MutableInt(final int i) {
+        value = i;
+    }
 
-        try {
-            final PrivilegedExceptionAction<Unsafe> action = () -> {
-                final Field f = Unsafe.class.getDeclaredField("theUnsafe");
-                f.setAccessible(true);
+    public final static int pack(final byte... values) {
+        int value = 0;
 
-                return (Unsafe) f.get(null);
-            };
-
-            unsafe = AccessController.doPrivileged(action);
-        } catch (final Throwable t) {
-            throw new RuntimeException("Exception accessing Unsafe", t);
+        switch (values.length) {
+            default:
+            case 4:
+                value += values[3] << (Byte.SIZE * 3);
+            case 3:
+                value += values[2] << (Byte.SIZE * 2);
+            case 2:
+                value += values[1] << Byte.SIZE;
+            case 1:
+                value += values[0];
+            case 0:
         }
 
-        UNSAFE = unsafe;
+        return value;
     }
 
-    @Intrinsic
-    private final S data;
-
-    private final long length;
-    private final boolean isPowerOf2;
-    private final long mask;
-
-    @Contended
-    private long marker = 0;
-
-    protected <U extends BaseSupplier<S>> AbstractCircularTimeSeries(final U instanceSupplier) {
-        data = instanceSupplier.apply("data", this);
-
-        final Class<?>[] clazz = {data.getClass(), instanceSupplier.getClass()};
-        final MethodAccess[] methodAccessArray = {MethodAccess.get(clazz[0]), MethodAccess.get(clazz[1])};
-        final FieldAccess[] fieldAccessArray = {FieldAccess.get(clazz[0]), FieldAccess.get(clazz[1])};
-
-        long theLength = -1;
-
-        final String[] names = {"length", "size", "count", "items"};
-
-        outerLoop:
-        for (String name : names) {
-            for (int i = 0; i < 2; i++) {
-                final MethodAccess methodAccess = methodAccessArray[i];
-                final FieldAccess fieldAccess = fieldAccessArray[i];
-
-                try {
-                    theLength = (long) methodAccess.invoke(data, "get" + name.substring(0, 1).toUpperCase() + name.substring(1));
-                    break outerLoop;
-                } catch (Throwable t) {
-                }
-
-                try {
-                    theLength = (long) methodAccess.invoke(data, name);
-                    break outerLoop;
-                } catch (Throwable t) {
-                }
-
-                try {
-                    theLength = (long) fieldAccess.get(data, name);
-                    break outerLoop;
-                } catch (Throwable t) {
-                }
-            }
+    public final static byte[] unpack(final byte[] result, final int value) {
+        switch (result.length) {
+            default:
+            case 4:
+                result[3] = (byte) (value & (0xFF000000 >> (Byte.SIZE * 3)));
+            case 3:
+                result[2] = (byte) (value & (0x00FF0000 >> (Byte.SIZE * 2)));
+            case 2:
+                result[1] = (byte) (value & (0x0000FF00 >> Byte.SIZE));
+            case 1:
+                result[0] = (byte) (value & 0x000000FF);
+            case 0:
         }
 
-        if (theLength == -1)
-            throw new IllegalStateException("Cannot deduce the array length! The data field or instanceSupplier parameter should contain accessible getters and / or fields for: " + Arrays.toString(names));
-
-        this.length = theLength;
-        this.isPowerOf2 = (length & (length - 1)) == 0;
-        this.mask = isPowerOf2 ? (1 << (Long.SIZE - Long.numberOfLeadingZeros(length - 1))) : (length - 1);
+        return result;
     }
 
-    private static long getFieldOffset(final Class<?> cls, final String field) {
-        try {
-            return UNSAFE.objectFieldOffset(cls.getField(field));
-        } catch (Throwable t) {
-            throw new RuntimeException("Error in accessing field: " + field + " in: " + cls, t);
-        }
-    }
+    public final static int pack(final short... values) {
+        int value = 0;
 
-    private long roll(final long index) {
-        return isPowerOf2 ? index & mask : index > mask ? index - mask : index < 0 ? index + mask : index;
-    }
-
-    public final long getLength() {
-        return length;
-    }
-
-    public final S getData() {
-        return data;
-    }
-
-    protected abstract T getItAt(final long index);
-
-    protected abstract void setItAt(final long index, final T value);
-
-    public final T last(final long index) {
-        long theMarker = marker;
-        T theValue = getItAt(roll(theMarker - index));
-
-        while (theMarker != (theMarker = UNSAFE.getLongVolatile(this, markerOffset))) {
-            theValue = getItAt(roll(theMarker - index));
+        switch (values.length) {
+            default:
+            case 2:
+                value += values[1] << Short.SIZE;
+            case 1:
+                value += values[0];
+            case 0:
         }
 
-        return theValue;
+        return value;
     }
 
-    public void updateNext(final T value) {
-        long theMarker = marker;
-        long next = roll(theMarker + 1);
-        while (!UNSAFE.compareAndSwapLong(this, markerOffset, theMarker, next)) {
-            theMarker = UNSAFE.getLongVolatile(this, markerOffset);
-            next = roll(theMarker + 1);
+    public final static short[] unpack(final short[] result, final int value) {
+        switch (result.length) {
+            default:
+            case 2:
+                result[1] = (short) (value & (0xFFFF0000 >> Short.SIZE));
+            case 1:
+                result[0] = (short) (value & 0x0000FFFF);
+            case 0:
         }
 
-        setItAt(next, value);
+        return result;
+    }
+
+    @Override
+    public final String toString() {
+        return String.valueOf(value);
+    }
+
+    public final int getValue() {
+        return value;
+    }
+
+    public final void setValue(final int value) {
+        this.value = value;
+    }
+
+    public final int get() {
+        return value;
+    }
+
+    public final int getValueVolatile() {
+        return UNSAFE.getIntVolatile(this, valueFieldOffset);
+    }
+
+    public final void setValueVolatile(final int value) {
+        UNSAFE.putIntVolatile(this, valueFieldOffset, value);
+    }
+
+    public final void set(final int value) {
+        this.value = value;
+    }
+
+    public final void setValueOrdered(
+            final int value) {
+        UNSAFE.putOrderedInt(this, valueFieldOffset, (value));
+    }
+
+    public final boolean compareAndSwapValue(final int expected,
+                                             final int value) {
+        return UNSAFE.compareAndSwapInt(this,
+                valueFieldOffset,
+                (expected), (value));
+    }
+
+    public final int getAndSetValue(
+            final int value) {
+        return UNSAFE.getAndSetInt(this,
+                valueFieldOffset,
+                value);
+    }
+
+    @Override
+    public final boolean equals(Object other) {
+        if (other instanceof MutableInt)
+            return value == ((MutableInt) other).getValue();
+        else if (other instanceof ImmutableInt)
+            return value == ((ImmutableInt) other).getValue();
+        else if (other instanceof Integer)
+            return ((Integer) other).intValue() == value;
+        else
+            return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Integer.hashCode(value);
+    }
+
+    @Override
+    public final int compareTo(final MutableInt other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    public final int compareTo(final ImmutableInt other) {
+        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
+    }
+
+    // Others
+
+    @Override
+    public final int intValue() {
+        return value;
+    }
+
+    @Override
+    public final long longValue() {
+        return (long) value;
+    }
+
+    @Override
+    public final float floatValue() {
+        return (float) value;
+    }
+
+    @Override
+    public final double doubleValue() {
+        return (double) value;
     }
 }

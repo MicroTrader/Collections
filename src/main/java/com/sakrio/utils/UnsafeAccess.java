@@ -91,43 +91,46 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
+package com.sakrio.utils;
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+import sun.misc.Unsafe;
 
-defaultTasks 'clean', 'build', 'jar'
+import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+/**
+ * Created by sirin_000 on 03/10/2015.
+ */
+public class UnsafeAccess {
+    public static final Unsafe UNSAFE;
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    static {
+        Unsafe unsafe = null;
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
+        try {
+            final PrivilegedExceptionAction<Unsafe> action = () -> {
+                final Field f = Unsafe.class.getDeclaredField("theUnsafe");
+                f.setAccessible(true);
 
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'com.esotericsoftware:reflectasm:1.11.3'
-    compile 'com.googlecode.cqengine:cqengine: 2.7.1'
+                return (Unsafe) f.get(null);
+            };
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+            unsafe = AccessController.doPrivileged(action);
+        } catch (final Throwable t) {
+            throw new RuntimeException("Exception accessing Unsafe", t);
+        }
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+        UNSAFE = unsafe;
+    }
+
+    public static long getFieldOffset(final Class<?> cls, final String field) {
+        try {
+            return UNSAFE.objectFieldOffset(cls.getField(field));
+        } catch (NoSuchFieldException e) {
+            UncheckedExceptions.rethrow(e);
+        }
+
+        return 0L;
     }
 }

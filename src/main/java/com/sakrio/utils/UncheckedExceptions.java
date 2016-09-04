@@ -91,43 +91,25 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
+package com.sakrio.utils;
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+import sun.misc.Unsafe;
 
-defaultTasks 'clean', 'build', 'jar'
+/**
+ * Created by sirin_000 on 03/10/2015.
+ */
+public class UncheckedExceptions {
+    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+    public static void rethrow(final Throwable throwable) {
+        UncheckedExceptions.rethrowUnchecked(throwable);
+    }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    private static <T extends Throwable> void rethrowUnchecked(final Throwable throwable) throws T {
+        throw (T) throwable;
+    }
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
-
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'com.esotericsoftware:reflectasm:1.11.3'
-    compile 'com.googlecode.cqengine:cqengine: 2.7.1'
-
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+    public static void rethrowUnsafe(final Throwable throwable) {
+        UNSAFE.throwException(throwable);
     }
 }
