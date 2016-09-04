@@ -148,7 +148,7 @@ public abstract class AbstractCircularTimeSeries<S, T> {
 
         long theLength = -1;
 
-        final String[] names = {"length", "size", "count", "items", "num", "number"};
+        final String[] names = {"length", "size", "count", "items"};
 
         for (String name : names) {
             try {
