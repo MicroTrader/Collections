@@ -142,35 +142,42 @@ public abstract class AbstractCircularTimeSeries<S, T> {
     protected <U extends BaseSupplier<S>> AbstractCircularTimeSeries(final U instanceSupplier) {
         data = instanceSupplier.apply("data", this);
 
-        final Class<?> dataClass = data.getClass();
-        MethodAccess methodAccess = MethodAccess.get(dataClass);
-        FieldAccess fieldAccess = FieldAccess.get(dataClass);
+        final Class<?>[] clazz = {data.getClass(), instanceSupplier.getClass()};
+        final MethodAccess[] methodAccessArray = {MethodAccess.get(clazz[0]), MethodAccess.get(clazz[1])};
+        final FieldAccess[] fieldAccessArray = {FieldAccess.get(clazz[0]), FieldAccess.get(clazz[1])};
 
         long theLength = -1;
 
         final String[] names = {"length", "size", "count", "items"};
 
+        outerLoop:
         for (String name : names) {
-            try {
-                theLength = (long) methodAccess.invoke(data, name);
-                break;
-            } catch (Throwable t) {
-            }
+            for (int i = 0; i < 2; i++) {
+                final MethodAccess methodAccess = methodAccessArray[i];
+                final FieldAccess fieldAccess = fieldAccessArray[i];
 
-            try {
-                theLength = (long) methodAccess.invoke(data, "get" + name.substring(0, 1).toUpperCase() + name.substring(1));
-                break;
-            } catch (Throwable t) {
-            }
+                try {
+                    theLength = (long) methodAccess.invoke(data, name);
+                    break outerLoop;
+                } catch (Throwable t) {
+                }
 
-            try {
-                theLength = (long) fieldAccess.get(data, name);
-                break;
-            } catch (Throwable t) {
+                try {
+                    theLength = (long) methodAccess.invoke(data, "get" + name.substring(0, 1).toUpperCase() + name.substring(1));
+                    break outerLoop;
+                } catch (Throwable t) {
+                }
+
+                try {
+                    theLength = (long) fieldAccess.get(data, name);
+                    break outerLoop;
+                } catch (Throwable t) {
+                }
             }
         }
 
-        theLength = theLength == -1 ? 1 : theLength;
+        if (theLength == -1)
+            throw new IllegalStateException("Cannot deduce the array length!");
 
         this.length = theLength;
         this.isPowerOf2 = (length & (length - 1)) == 0;

@@ -99,7 +99,7 @@ import org.ObjectLayout.StructuredArrayBuilder;
 /**
  * Created by sirinath on 03/09/2016.
  */
-public final class StructuredArraySupplier<S extends StructuredArray<T>, T> extends BaseSupplier<S> {
+public final class StructuredArraySupplier<S extends StructuredArray<T>, T> extends ArraySupplier<S> {
     private final StructuredArrayBuilder<S, T> structuredArrayBuilder;
 
     public StructuredArraySupplier(final StructuredArrayBuilder<S, T> structuredArrayBuilder) {
@@ -109,5 +109,10 @@ public final class StructuredArraySupplier<S extends StructuredArray<T>, T> exte
     @Override
     public final S apply(final String field, final Object containingObject) {
         return IntrinsicHelpers.constructWithin(field, containingObject, structuredArrayBuilder);
+    }
+
+    @Override
+    public long getLength() {
+        return structuredArrayBuilder.getArrayModel().getLength();
     }
 }

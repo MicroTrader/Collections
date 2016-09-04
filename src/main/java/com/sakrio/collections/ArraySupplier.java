@@ -93,11 +93,8 @@
 
 package com.sakrio.collections;
 
-import java.util.function.BiFunction;
-
 /**
- * Created by sirinath on 03/09/2016.
+ * Created by HP on 04/09/2016.
  */
-abstract class BaseSupplier<R> implements BiFunction<String, Object, R> {
-    public abstract long getLength();
+public abstract class ArraySupplier<U> extends BaseSupplier<U> {
 }

@@ -98,7 +98,7 @@ import org.ObjectLayout.PrimitiveArrayBuilder;
 /**
  * Created by sirinath on 03/09/2016.
  */
-public final class PrimitiveArraySupplier<S> extends BaseSupplier<S> {
+public final class PrimitiveArraySupplier<S> extends ArraySupplier<S> {
     private final PrimitiveArrayBuilder primitiveArrayBuilder;
 
     public PrimitiveArraySupplier(final PrimitiveArrayBuilder primitiveArrayBuilder) {
@@ -108,5 +108,10 @@ public final class PrimitiveArraySupplier<S> extends BaseSupplier<S> {
     @Override
     public final S apply(final String field, final Object containingObject) {
         return IntrinsicHelpers.constructWithin(field, containingObject, primitiveArrayBuilder);
+    }
+
+    @Override
+    public long getLength() {
+        return primitiveArrayBuilder.getArrayModel().getLength();
     }
 }
