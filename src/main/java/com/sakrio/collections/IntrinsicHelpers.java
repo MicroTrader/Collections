@@ -172,12 +172,12 @@ public class IntrinsicHelpers {
         return IntrinsicObjects.constructWithin(lookup, fieldName, containingObject);
     }
 
-    public static <S extends StructuredArray<T>, T> S constructWithin(final String fieldName, final Object containingObject, final StructuredArrayBuilder<S, T> arrayBuilder) {
-        return IntrinsicObjects.constructWithin(lookup, fieldName, containingObject, arrayBuilder);
-    }
-
     public static <T> T constructWithin(final String fieldName, final Object containingObject, final CtorAndArgs<T> ctorAndArgs) {
         return IntrinsicObjects.constructWithin(lookup, fieldName, containingObject, ctorAndArgs);
+    }
+
+    public static <S extends StructuredArray<T>, T> S constructWithin(final String fieldName, final Object containingObject, final StructuredArrayBuilder<S, T> arrayBuilder) {
+        return IntrinsicObjects.constructWithin(lookup, fieldName, containingObject, arrayBuilder);
     }
 
     public static <T> T constructWithin(final String fieldName, final Object containingObject, final PrimitiveArrayBuilder arrayBuilder) {
