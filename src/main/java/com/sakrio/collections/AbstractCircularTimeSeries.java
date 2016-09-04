@@ -102,6 +102,7 @@ import sun.misc.Unsafe;
 import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
 
 /**
  * Created by sirinath on 31/08/2016.
@@ -157,13 +158,13 @@ public abstract class AbstractCircularTimeSeries<S, T> {
                 final FieldAccess fieldAccess = fieldAccessArray[i];
 
                 try {
-                    theLength = (long) methodAccess.invoke(data, name);
+                    theLength = (long) methodAccess.invoke(data, "get" + name.substring(0, 1).toUpperCase() + name.substring(1));
                     break outerLoop;
                 } catch (Throwable t) {
                 }
 
                 try {
-                    theLength = (long) methodAccess.invoke(data, "get" + name.substring(0, 1).toUpperCase() + name.substring(1));
+                    theLength = (long) methodAccess.invoke(data, name);
                     break outerLoop;
                 } catch (Throwable t) {
                 }
@@ -177,7 +178,7 @@ public abstract class AbstractCircularTimeSeries<S, T> {
         }
 
         if (theLength == -1)
-            throw new IllegalStateException("Cannot deduce the array length!");
+            throw new IllegalStateException("Cannot deduce the array length! The data field or instanceSupplier parameter should contain accessible getters and / or fields for: " + Arrays.toString(names));
 
         this.length = theLength;
         this.isPowerOf2 = (length & (length - 1)) == 0;
