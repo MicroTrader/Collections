@@ -93,6 +93,8 @@
 
 package com.sakrio.collections;
 
+import com.esotericsoftware.reflectasm.FieldAccess;
+import com.esotericsoftware.reflectasm.MethodAccess;
 import org.ObjectLayout.Intrinsic;
 import sun.misc.Contended;
 import sun.misc.Unsafe;
@@ -137,12 +139,42 @@ public abstract class AbstractCircularTimeSeries<S, T> {
     @Contended
     private long marker = 0;
 
-    protected <U extends BaseSupplier<S>> AbstractCircularTimeSeries(final long length, final U instanceSupplier) {
-        this.length = length;
+    protected <U extends BaseSupplier<S>> AbstractCircularTimeSeries(final U instanceSupplier) {
+        data = instanceSupplier.apply("data", this);
+
+        final Class<?> dataClass = data.getClass();
+        MethodAccess methodAccess = MethodAccess.get(dataClass);
+        FieldAccess fieldAccess = FieldAccess.get(dataClass);
+
+        long theLength = -1;
+
+        final String[] names = {"length", "size", "count", "items", "num", "number"};
+
+        for (String name : names) {
+            try {
+                theLength = (long) methodAccess.invoke(data, name);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = (long) methodAccess.invoke(data, "get" + name.substring(0, 1).toUpperCase() + name.substring(1));
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = (long) fieldAccess.get(data, name);
+                break;
+            } catch (Throwable t) {
+            }
+        }
+
+        theLength = theLength == -1 ? 1 : theLength;
+
+        this.length = theLength;
         this.isPowerOf2 = (length & (length - 1)) == 0;
         this.mask = isPowerOf2 ? (1 << (Long.SIZE - Long.numberOfLeadingZeros(length - 1))) : (length - 1);
-
-        data = instanceSupplier.apply("data", this);
     }
 
     private static long getFieldOffset(final Class<?> cls, final String field) {
