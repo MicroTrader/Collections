@@ -149,7 +149,7 @@ public final class MutableLong extends Number
         return value;
     }
 
-    public final static byte[] unpack(final byte[] result, final long value) {
+    public final static void unpack(final byte[] result, final long value) {
         switch (result.length) {
             default:
             case 8:
@@ -170,8 +170,6 @@ public final class MutableLong extends Number
                 result[0] = (byte) (value & 0x00000000000000FFL);
             case 0:
         }
-
-        return result;
     }
 
     public final static long pack(final short... values) {
@@ -193,7 +191,7 @@ public final class MutableLong extends Number
         return value;
     }
 
-    public final static short[] unpack(final short[] result, final long value) {
+    public final static void unpack(final short[] result, final long value) {
         switch (result.length) {
             default:
             case 4:
@@ -206,8 +204,6 @@ public final class MutableLong extends Number
                 result[0] = (short) (value & 0x000000000000FFFFL);
             case 0:
         }
-
-        return result;
     }
 
     public final static long pack(final int... values) {
@@ -225,7 +221,7 @@ public final class MutableLong extends Number
         return value;
     }
 
-    public final static int[] unpack(final int[] result, final long value) {
+    public final static void unpack(final int[] result, final long value) {
         switch (result.length) {
             default:
             case 2:
@@ -234,8 +230,6 @@ public final class MutableLong extends Number
                 result[0] = (int) (value & 0x00000000FFFFFFFFL);
             case 0:
         }
-
-        return result;
     }
 
     @Override

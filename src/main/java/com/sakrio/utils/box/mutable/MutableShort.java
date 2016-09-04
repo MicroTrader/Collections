@@ -136,7 +136,7 @@ public final class MutableShort extends Number
         return value;
     }
 
-    public final static byte[] unpack(final byte[] result, final short value) {
+    public final static void unpack(final byte[] result, final short value) {
         switch (result.length) {
             default:
             case 2:
@@ -145,8 +145,6 @@ public final class MutableShort extends Number
                 result[0] = (byte) (value & 0x00FF);
             case 0:
         }
-
-        return result;
     }
 
     @Override

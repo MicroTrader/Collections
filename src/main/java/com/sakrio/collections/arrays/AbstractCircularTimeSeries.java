@@ -95,40 +95,19 @@ package com.sakrio.collections.arrays;
 
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
+import com.sakrio.utils.UnsafeAccess;
 import org.ObjectLayout.Intrinsic;
 import sun.misc.Contended;
 import sun.misc.Unsafe;
 
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 
 /**
  * Created by sirinath on 31/08/2016.
  */
 public abstract class AbstractCircularTimeSeries<S, T> {
-    private static final Unsafe UNSAFE;
-    private static long markerOffset = getFieldOffset(AbstractCircularTimeSeries.class, "marker");
-
-    static {
-        Unsafe unsafe = null;
-
-        try {
-            final PrivilegedExceptionAction<Unsafe> action = () -> {
-                final Field f = Unsafe.class.getDeclaredField("theUnsafe");
-                f.setAccessible(true);
-
-                return (Unsafe) f.get(null);
-            };
-
-            unsafe = AccessController.doPrivileged(action);
-        } catch (final Throwable t) {
-            throw new RuntimeException("Exception accessing Unsafe", t);
-        }
-
-        UNSAFE = unsafe;
-    }
+    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    private static long markerOffset = UnsafeAccess.getFieldOffset(AbstractCircularTimeSeries.class, "marker");
 
     @Intrinsic
     private final S data;
@@ -183,14 +162,6 @@ public abstract class AbstractCircularTimeSeries<S, T> {
         this.length = theLength;
         this.isPowerOf2 = (length & (length - 1)) == 0;
         this.mask = isPowerOf2 ? (1 << (Long.SIZE - Long.numberOfLeadingZeros(length - 1))) : (length - 1);
-    }
-
-    private static long getFieldOffset(final Class<?> cls, final String field) {
-        try {
-            return UNSAFE.objectFieldOffset(cls.getField(field));
-        } catch (Throwable t) {
-            throw new RuntimeException("Error in accessing field: " + field + " in: " + cls, t);
-        }
     }
 
     private long roll(final long index) {
