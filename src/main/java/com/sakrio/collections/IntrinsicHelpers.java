@@ -96,6 +96,7 @@ package com.sakrio.collections;
 import org.ObjectLayout.*;
 
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 
 /**
  * Created by sirinath on 01/09/2016.
@@ -103,20 +104,68 @@ import java.lang.invoke.MethodHandles;
 public class IntrinsicHelpers {
     private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
-    public static <S extends StructuredArray<T>, T> StructuredArrayModel<S, T> arrayModel(final long length) {
+    public static <S extends StructuredArray<T>, T> StructuredArrayModel<S, T> structuredArrayModel(final long length) {
         return new StructuredArrayModel<S, T>(length);
+    }
+
+    public static <S extends StructuredArray<T>, T extends StructuredArray<U>, U> StructuredArrayModel<S, T> structuredArrayModel(final Class<S> arrayClass, final StructuredArrayModel<T, U> subArrayModel, final long length) {
+        return new StructuredArrayModel<S, T>(arrayClass, subArrayModel, length);
+    }
+
+    public static <S extends StructuredArray<T>, T> StructuredArrayModel<S, T> structuredArrayModel(final Class<S> arrayClass, final PrimitiveArrayModel<?> subArrayModel, final long length) {
+        return new StructuredArrayModel<S, T>(arrayClass, subArrayModel, length);
     }
 
     public static <T> CtorAndArgs<T> ctorAndArgs(final Class<T> instanceClass, final Class[] constructorArgTypes, final Object... args) {
         return new CtorAndArgs<T>(instanceClass, constructorArgTypes, args);
     }
 
-    public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> arrayBuilder(final StructuredArrayModel<S, T> model, final CtorAndArgs<S> arrayCtorAndArgs, final CtorAndArgs<T> elementCtorAndArgs) {
-        return new StructuredArrayBuilder<S, T>(model).arrayCtorAndArgs(arrayCtorAndArgs).elementCtorAndArgs(elementCtorAndArgs);
+    public static <T> CtorAndArgs<T> ctorAndArgs(final Constructor<T> constructor, final Object... args) {
+        return new CtorAndArgs<T>(constructor, args);
     }
 
-    public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> arrayBuilder(final StructuredArrayModel<S, T> model, final CtorAndArgs<S> arrayCtorAndArgs, final CtorAndArgsProvider<T> elementCtorAndArgsProvider) {
-        return new StructuredArrayBuilder<S, T>(model).arrayCtorAndArgs(arrayCtorAndArgs).elementCtorAndArgsProvider(elementCtorAndArgsProvider);
+    public static <T> CtorAndArgs<T> ctorAndArgs(final Class<T> instanceClass) {
+        return new CtorAndArgs<T>(instanceClass);
+    }
+
+    public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> structuredArrayBuilder(final long length) {
+        return new StructuredArrayBuilder<S, T>(structuredArrayModel(length)).resolve();
+    }
+
+    public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> structuredArrayBuilder(final CtorAndArgs<S> arrayCtorAndArgs, final CtorAndArgs<T> elementCtorAndArgs, final long length) {
+        return new StructuredArrayBuilder<S, T>(structuredArrayModel(length)).arrayCtorAndArgs(arrayCtorAndArgs).elementCtorAndArgs(elementCtorAndArgs).resolve();
+    }
+
+    public static <S extends StructuredArray<T>, T extends StructuredArray<U>, U> StructuredArrayBuilder<S, T> structuredArrayBuilder(final CtorAndArgs<S> arrayCtorAndArgs, final StructuredArrayModel<T, U> subArrayModel, final long length) {
+        return new StructuredArrayBuilder<S, T>(structuredArrayModel(arrayCtorAndArgs.getConstructor().getDeclaringClass(), subArrayModel, length)).arrayCtorAndArgs(arrayCtorAndArgs).resolve();
+    }
+
+    public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> structuredArrayBuilder(final CtorAndArgs<S> arrayCtorAndArgs, final PrimitiveArrayModel<?> subArrayModel, final long length) {
+        return new StructuredArrayBuilder<S, T>(structuredArrayModel(arrayCtorAndArgs.getConstructor().getDeclaringClass(), subArrayModel, length)).arrayCtorAndArgs(arrayCtorAndArgs).resolve();
+    }
+
+    public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> structuredArrayBuilder(final CtorAndArgs<S> arrayCtorAndArgs, final CtorAndArgsProvider<T> elementCtorAndArgsProvider, final long length) {
+        return new StructuredArrayBuilder<S, T>(structuredArrayModel(length)).arrayCtorAndArgs(arrayCtorAndArgs).elementCtorAndArgsProvider(elementCtorAndArgsProvider).resolve();
+    }
+
+    public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> structuredArrayBuilder(final CtorAndArgs<S> arrayCtorAndArgs, final CtorAndArgsProvider<T> elementCtorAndArgsProvider, final Object contextCookie, final long length) {
+        return new StructuredArrayBuilder<S, T>(structuredArrayModel(length)).arrayCtorAndArgs(arrayCtorAndArgs).elementCtorAndArgsProvider(elementCtorAndArgsProvider).contextCookie(contextCookie).resolve();
+    }
+
+    public static <S> PrimitiveArrayBuilder<?> primitiveArrayBuilder(final CtorAndArgs<S> arrayCtorAndArgs, final long length) {
+        try {
+            return new PrimitiveArrayBuilder(arrayCtorAndArgs.getConstructor().getDeclaringClass(), length).arrayCtorAndArgs(arrayCtorAndArgs).resolve();
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException("Malformed PrimitiveArrayBuilder", e);
+        }
+    }
+
+    public static <S> PrimitiveArrayBuilder<?> primitiveArrayBuilder(final Class<S> arrayClass, final long length) {
+        try {
+            return new PrimitiveArrayBuilder(arrayClass, length).resolve();
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException("Malformed PrimitiveArrayBuilder", e);
+        }
     }
 
     public static <T> T constructWithin(final String fieldName, final Object containingObject) {
