@@ -113,10 +113,12 @@ import com.koloboke.compile.mutability.Updatable;
  */
 @KolobokeMap
 @Updatable
-public abstract class Index<K> {
-    static <K> Index<K> withExpectedSize(int expectedSize) {
-        return new KolobokeIndex<K>(expectedSize);
+public abstract class Indexer {
+    static Indexer withExpectedSize(int expectedSize) {
+        return new KolobokeIndexer(expectedSize);
     }
 
-    public abstract void justPut(String key, long value);
+    public abstract void justPut(long key, long value);
+
+    abstract long get(long key);
 }

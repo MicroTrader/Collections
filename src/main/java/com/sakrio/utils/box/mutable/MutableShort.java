@@ -135,22 +135,23 @@ public final class MutableShort extends Number
         value = i;
     }
 
-    public final static short pack(final String values, final String charsetName) {
+    public final static short pack(final int index, final int to, final String values, final String charsetName) {
         try {
-            return pack(0, values.getBytes(charsetName));
+            return pack(index, to, values.getBytes(charsetName));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("Charset not supported", e);
         }
     }
 
-    public final static short pack(final String values) {
-        return pack(values, "US-ASCII");
+    public final static short pack(final int index, final int to, final String values) {
+        return pack(index, to, values, "US-ASCII");
     }
 
-    public final static short pack(final int index, final byte... values) {
+    public final static short pack(final int index, final int to, final byte... values) {
         short value = 0;
 
-        final int remainder = Math.max(values.length - index, 0);
+        final int last = Math.min(values.length, to);
+        final int remainder = Math.max(last - index, 0);
 
         switch (remainder) {
             default:
@@ -164,8 +165,9 @@ public final class MutableShort extends Number
         return value;
     }
 
-    public final static void unpack(final int index, final byte[] result, final short value) {
-        final int remainder = Math.max(result.length - index, 0);
+    public final static void unpack(final int index, final int to, final byte[] result, final short value) {
+        final int last = Math.min(result.length, to);
+        final int remainder = Math.max(last - index, 0);
 
         switch (remainder) {
             default:
