@@ -103,111 +103,20 @@
  * _______________________________________________________________________________
  */
 
+package com.sakrio.collections.indices;
 
-package com.sakrio.utils.box.mutable;
-
-
-import com.sakrio.utils.UnsafeAccess;
-import com.sakrio.utils.box.BoxOnce;
-import com.sakrio.utils.box.immutable.ImmutableChar;
-import sun.misc.Unsafe;
+import com.koloboke.compile.KolobokeMap;
+import com.koloboke.compile.mutability.Updatable;
 
 /**
- * Wrapper class
- *
- * @author sirinath
+ * Created by sirinath on 05/09/2016.
  */
-@SuppressWarnings("serial")
-public final class MutableChar extends Number
-        implements BoxOnce<MutableChar> {
-    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableChar.class, "value");
-    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
-    /**
-     * Value
-     */
-    private char value;
-
-    /**
-     * @param i Parameter
-     */
-    public MutableChar(final char i) {
-        value = i;
+@KolobokeMap
+@Updatable
+public abstract class Index<K> {
+    static <K> Index<K> withExpectedSize(int expectedSize) {
+        return new KolobokeIndex<K>(expectedSize);
     }
 
-    @Override
-    public final String toString() {
-        return String.valueOf(value);
-    }
-
-    public final char getValue() {
-        return value;
-    }
-
-    public final void setValue(final char value) {
-        this.value = value;
-    }
-
-    public final char get() {
-        return value;
-    }
-
-    public final char getValueVolatile() {
-        return UNSAFE.getCharVolatile(this, valueFieldOffset);
-    }
-
-    public final void setValueVolatile(final char value) {
-        UNSAFE.putCharVolatile(this, valueFieldOffset, value);
-    }
-
-    public final void set(final char value) {
-        this.value = value;
-    }
-
-    @Override
-    public final boolean equals(Object other) {
-        if (other instanceof MutableChar)
-            return value == ((MutableChar) other).getValue();
-        else if (other instanceof ImmutableChar)
-            return value == ((ImmutableChar) other).getValue();
-        else if (other instanceof Character)
-            return ((Character) other).charValue() == value;
-        else
-            return false;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Character.hashCode(value);
-    }
-
-    @Override
-    public final int compareTo(final MutableChar other) {
-        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
-    }
-
-    public final int compareTo(final ImmutableChar other) {
-        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
-    }
-
-    // Others
-
-    @Override
-    public final int intValue() {
-        return (int) value;
-    }
-
-    @Override
-    public final long longValue() {
-        return (long) value;
-    }
-
-    @Override
-    public final float floatValue() {
-        return (float) value;
-    }
-
-    @Override
-    public final double doubleValue() {
-        return (double) value;
-    }
+    public abstract void justPut(String key, long value);
 }
