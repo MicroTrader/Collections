@@ -136,142 +136,142 @@ public final class MutableLong extends Number
         value = i;
     }
 
-    public final static long pack(final int index, final int to, final String values, final String charsetName) {
+    public final static long pack(final int from, final int to, final String values, final String charsetName) {
         try {
-            return pack(index, to, values.getBytes(charsetName));
+            return pack(from, to, values.getBytes(charsetName));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("Charset not supported", e);
         }
     }
 
-    public final static long pack(final int index, final int to, final String values) {
-        return pack(index, to, values, "US-ASCII");
+    public final static long pack(final int from, final int to, final String values) {
+        return pack(from, to, values, "US-ASCII");
     }
 
-    public final static long pack(final int index, final int to, final byte... values) {
+    public final static long pack(final int from, final int to, final byte... values) {
         long value = 0;
 
         final int last = Math.min(values.length, to);
-        final int remainder = Math.max(last - index, 0);
+        final int remainder = Math.max(last - from, 0);
 
         switch (remainder) {
             default:
             case 8:
-                value += values[index + 7] << (Byte.SIZE * 7);
+                value += values[from + 7] << (Byte.SIZE * 7);
             case 7:
-                value += values[index + 6] << (Byte.SIZE * 6);
+                value += values[from + 6] << (Byte.SIZE * 6);
             case 6:
-                value += values[index + 5] << (Byte.SIZE * 5);
+                value += values[from + 5] << (Byte.SIZE * 5);
             case 5:
-                value += values[index + 4] << (Byte.SIZE * 4);
+                value += values[from + 4] << (Byte.SIZE * 4);
             case 4:
-                value += values[index + 3] << (Byte.SIZE * 3);
+                value += values[from + 3] << (Byte.SIZE * 3);
             case 3:
-                value += values[index + 2] << (Byte.SIZE * 2);
+                value += values[from + 2] << (Byte.SIZE * 2);
             case 2:
-                value += values[index + 1] << Byte.SIZE;
+                value += values[from + 1] << Byte.SIZE;
             case 1:
-                value += values[index];
+                value += values[from];
             case 0:
         }
 
         return value;
     }
 
-    public final static void unpack(final int index, final int to, final byte[] result, final long value) {
+    public final static void unpack(final int from, final int to, final byte[] result, final long value) {
         final int last = Math.min(result.length, to);
-        final int remainder = Math.max(last - index, 0);
+        final int remainder = Math.max(last - from, 0);
 
         switch (remainder) {
             default:
             case 8:
-                result[index + 7] = (byte) ((value & 0xFF00000000000000L) >> (Byte.SIZE * 7));
+                result[from + 7] = (byte) ((value & 0xFF00000000000000L) >> (Byte.SIZE * 7));
             case 7:
-                result[index + 6] = (byte) ((value & 0x00FF000000000000L) >> (Byte.SIZE * 6));
+                result[from + 6] = (byte) ((value & 0x00FF000000000000L) >> (Byte.SIZE * 6));
             case 6:
-                result[index + 5] = (byte) ((value & 0x0000FF0000000000L) >> (Byte.SIZE * 5));
+                result[from + 5] = (byte) ((value & 0x0000FF0000000000L) >> (Byte.SIZE * 5));
             case 5:
-                result[index + 4] = (byte) ((value & 0x000000FF00000000L) >> (Byte.SIZE * 4));
+                result[from + 4] = (byte) ((value & 0x000000FF00000000L) >> (Byte.SIZE * 4));
             case 4:
-                result[index + 3] = (byte) ((value & 0x00000000FF000000L) >> (Byte.SIZE * 3));
+                result[from + 3] = (byte) ((value & 0x00000000FF000000L) >> (Byte.SIZE * 3));
             case 3:
-                result[index + 2] = (byte) ((value & 0x0000000000FF0000L) >> (Byte.SIZE * 2));
+                result[from + 2] = (byte) ((value & 0x0000000000FF0000L) >> (Byte.SIZE * 2));
             case 2:
-                result[index + 1] = (byte) ((value & 0x000000000000FF00L) >> Byte.SIZE);
+                result[from + 1] = (byte) ((value & 0x000000000000FF00L) >> Byte.SIZE);
             case 1:
-                result[index] = (byte) (value & 0x00000000000000FFL);
+                result[from] = (byte) (value & 0x00000000000000FFL);
             case 0:
         }
     }
 
-    public final static long pack(final int index, final int to, final short... values) {
+    public final static long pack(final int from, final int to, final short... values) {
         int value = 0;
 
         final int last = Math.min(values.length, to);
-        final int remainder = Math.max(last - index, 0);
+        final int remainder = Math.max(last - from, 0);
 
         switch (remainder) {
             default:
             case 4:
-                value += values[index + 3] << (Short.SIZE * 3);
+                value += values[from + 3] << (Short.SIZE * 3);
             case 3:
-                value += values[index + 2] << (Short.SIZE * 2);
+                value += values[from + 2] << (Short.SIZE * 2);
             case 2:
-                value += values[index + 1] << Short.SIZE;
+                value += values[from + 1] << Short.SIZE;
             case 1:
-                value += values[index];
+                value += values[from];
             case 0:
         }
 
         return value;
     }
 
-    public final static void unpack(final int index, final int to, final short[] result, final long value) {
+    public final static void unpack(final int from, final int to, final short[] result, final long value) {
         final int last = Math.min(result.length, to);
-        final int remainder = Math.max(last - index, 0);
+        final int remainder = Math.max(last - from, 0);
 
         switch (remainder) {
             default:
             case 4:
-                result[index + 3] = (short) ((value & 0xFFFF000000000000L) >> (Short.SIZE * 3));
+                result[from + 3] = (short) ((value & 0xFFFF000000000000L) >> (Short.SIZE * 3));
             case 3:
-                result[index + 2] = (short) ((value & 0x0000FFFF00000000L) >> (Short.SIZE * 2));
+                result[from + 2] = (short) ((value & 0x0000FFFF00000000L) >> (Short.SIZE * 2));
             case 2:
-                result[index + 1] = (short) ((value & 0x00000000FFFF0000L) >> Short.SIZE);
+                result[from + 1] = (short) ((value & 0x00000000FFFF0000L) >> Short.SIZE);
             case 1:
-                result[index] = (short) (value & 0x000000000000FFFFL);
+                result[from] = (short) (value & 0x000000000000FFFFL);
             case 0:
         }
     }
 
-    public final static long pack(final int index, final int to, final int... values) {
+    public final static long pack(final int from, final int to, final int... values) {
         long value = 0;
 
         final int last = Math.min(values.length, to);
-        final int remainder = Math.max(last - index, 0);
+        final int remainder = Math.max(last - from, 0);
 
         switch (remainder) {
             default:
             case 2:
-                value += values[index + 1] << Integer.SIZE;
+                value += values[from + 1] << Integer.SIZE;
             case 1:
-                value += values[index];
+                value += values[from];
             case 0:
         }
 
         return value;
     }
 
-    public final static void unpack(final int index, final int to, final int[] result, final long value) {
+    public final static void unpack(final int from, final int to, final int[] result, final long value) {
         final int last = Math.min(result.length, to);
-        final int remainder = Math.max(last - index, 0);
+        final int remainder = Math.max(last - from, 0);
 
         switch (remainder) {
             default:
             case 2:
-                result[index + 1] = (int) ((value & 0xFFFFFFFF00000000L) >> Integer.SIZE);
+                result[from + 1] = (int) ((value & 0xFFFFFFFF00000000L) >> Integer.SIZE);
             case 1:
-                result[index] = (int) (value & 0x00000000FFFFFFFFL);
+                result[from] = (int) (value & 0x00000000FFFFFFFFL);
             case 0:
         }
     }

@@ -135,46 +135,46 @@ public final class MutableShort extends Number
         value = i;
     }
 
-    public final static short pack(final int index, final int to, final String values, final String charsetName) {
+    public final static short pack(final int from, final int to, final String values, final String charsetName) {
         try {
-            return pack(index, to, values.getBytes(charsetName));
+            return pack(from, to, values.getBytes(charsetName));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("Charset not supported", e);
         }
     }
 
-    public final static short pack(final int index, final int to, final String values) {
-        return pack(index, to, values, "US-ASCII");
+    public final static short pack(final int from, final int to, final String values) {
+        return pack(from, to, values, "US-ASCII");
     }
 
-    public final static short pack(final int index, final int to, final byte... values) {
+    public final static short pack(final int from, final int to, final byte... values) {
         short value = 0;
 
         final int last = Math.min(values.length, to);
-        final int remainder = Math.max(last - index, 0);
+        final int remainder = Math.max(last - from, 0);
 
         switch (remainder) {
             default:
             case 2:
-                value += values[index + 1] << Byte.SIZE;
+                value += values[from + 1] << Byte.SIZE;
             case 1:
-                value += values[index];
+                value += values[from];
             case 0:
         }
 
         return value;
     }
 
-    public final static void unpack(final int index, final int to, final byte[] result, final short value) {
+    public final static void unpack(final int from, final int to, final byte[] result, final short value) {
         final int last = Math.min(result.length, to);
-        final int remainder = Math.max(last - index, 0);
+        final int remainder = Math.max(last - from, 0);
 
         switch (remainder) {
             default:
             case 2:
-                result[index + 1] = (byte) ((value & 0xFF00) >> Byte.SIZE);
+                result[from + 1] = (byte) ((value & 0xFF00) >> Byte.SIZE);
             case 1:
-                result[index] = (byte) (value & 0x00FF);
+                result[from] = (byte) (value & 0x00FF);
             case 0:
         }
     }
