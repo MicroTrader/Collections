@@ -153,19 +153,19 @@ public final class MutableLong extends Number
         switch (result.length) {
             default:
             case 8:
-                result[7] = (byte) (value & (0xFF00000000000000L >> (Byte.SIZE * 7)));
+                result[7] = (byte) ((value & 0xFF00000000000000L) >> (Byte.SIZE * 7));
             case 7:
-                result[6] = (byte) (value & (0x00FF000000000000L >> (Byte.SIZE * 6)));
+                result[6] = (byte) ((value & 0x00FF000000000000L) >> (Byte.SIZE * 6));
             case 6:
-                result[5] = (byte) (value & (0x0000FF0000000000L >> (Byte.SIZE * 5)));
+                result[5] = (byte) ((value & 0x0000FF0000000000L) >> (Byte.SIZE * 5));
             case 5:
-                result[4] = (byte) (value & (0x000000FF00000000L >> (Byte.SIZE * 4)));
+                result[4] = (byte) ((value & 0x000000FF00000000L) >> (Byte.SIZE * 4));
             case 4:
-                result[3] = (byte) (value & (0x00000000FF000000L >> (Byte.SIZE * 3)));
+                result[3] = (byte) ((value & 0x00000000FF000000L) >> (Byte.SIZE * 3));
             case 3:
-                result[2] = (byte) (value & (0x0000000000FF0000L >> (Byte.SIZE * 2)));
+                result[2] = (byte) ((value & 0x0000000000FF0000L) >> (Byte.SIZE * 2));
             case 2:
-                result[1] = (byte) (value & (0x000000000000FF00L >> Byte.SIZE));
+                result[1] = (byte) ((value & 0x000000000000FF00L) >> Byte.SIZE);
             case 1:
                 result[0] = (byte) (value & 0x00000000000000FFL);
             case 0:
@@ -195,11 +195,11 @@ public final class MutableLong extends Number
         switch (result.length) {
             default:
             case 4:
-                result[3] = (short) (value & (0xFFFF000000000000L >> (Short.SIZE * 3)));
+                result[3] = (short) ((value & 0xFFFF000000000000L) >> (Short.SIZE * 3));
             case 3:
-                result[2] = (short) (value & (0x0000FFFF00000000L >> (Short.SIZE * 2)));
+                result[2] = (short) ((value & 0x0000FFFF00000000L) >> (Short.SIZE * 2));
             case 2:
-                result[1] = (short) (value & (0x00000000FFFF0000L >> Short.SIZE));
+                result[1] = (short) ((value & 0x00000000FFFF0000L) >> Short.SIZE);
             case 1:
                 result[0] = (short) (value & 0x000000000000FFFFL);
             case 0:
@@ -225,7 +225,7 @@ public final class MutableLong extends Number
         switch (result.length) {
             default:
             case 2:
-                result[1] = (int) (value & (0xFFFFFFFF00000000L >> Integer.SIZE));
+                result[1] = (int) ((value & 0xFFFFFFFF00000000L) >> Integer.SIZE);
             case 1:
                 result[0] = (int) (value & 0x00000000FFFFFFFFL);
             case 0:

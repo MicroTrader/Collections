@@ -140,7 +140,7 @@ public final class MutableShort extends Number
         switch (result.length) {
             default:
             case 2:
-                result[1] = (byte) (value & (0xFF00 >> Byte.SIZE));
+                result[1] = (byte) ((value & 0xFF00) >> Byte.SIZE);
             case 1:
                 result[0] = (byte) (value & 0x00FF);
             case 0:

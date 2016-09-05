@@ -145,11 +145,11 @@ public final class MutableInt extends Number
         switch (result.length) {
             default:
             case 4:
-                result[3] = (byte) (value & (0xFF000000 >> (Byte.SIZE * 3)));
+                result[3] = (byte) ((value & 0xFF000000) >> (Byte.SIZE * 3));
             case 3:
-                result[2] = (byte) (value & (0x00FF0000 >> (Byte.SIZE * 2)));
+                result[2] = (byte) ((value & 0x00FF0000) >> (Byte.SIZE * 2));
             case 2:
-                result[1] = (byte) (value & (0x0000FF00 >> Byte.SIZE));
+                result[1] = (byte) ((value & 0x0000FF00) >> Byte.SIZE);
             case 1:
                 result[0] = (byte) (value & 0x000000FF);
             case 0:
@@ -175,7 +175,7 @@ public final class MutableInt extends Number
         switch (result.length) {
             default:
             case 2:
-                result[1] = (short) (value & (0xFFFF0000 >> Short.SIZE));
+                result[1] = (short) ((value & 0xFFFF0000) >> Short.SIZE);
             case 1:
                 result[0] = (short) (value & 0x0000FFFF);
             case 0:

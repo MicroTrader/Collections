@@ -99,11 +99,23 @@ import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 
+import static sun.misc.Unsafe.*;
+
 /**
  * Created by sirin_000 on 03/10/2015.
  */
 public class UnsafeAccess {
     public static final Unsafe UNSAFE;
+
+    public static final long ARRAY_BOOLEAN_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_BOOLEAN_INDEX_SCALE) - 1;
+    public static final long ARRAY_BYTE_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_BYTE_INDEX_SCALE) - 1;
+    public static final long ARRAY_SHORT_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_SHORT_INDEX_SCALE) - 1;
+    public static final long ARRAY_CHAR_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_CHAR_INDEX_SCALE) - 1;
+    public static final long ARRAY_INT_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_INT_INDEX_SCALE) - 1;
+    public static final long ARRAY_LONG_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_LONG_INDEX_SCALE) - 1;
+    public static final long ARRAY_FLOAT_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_FLOAT_INDEX_SCALE) - 1;
+    public static final long ARRAY_DOUBLE_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_DOUBLE_INDEX_SCALE) - 1;
+    public static final long ARRAY_OBJECT_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_OBJECT_INDEX_SCALE) - 1;
 
     static {
         Unsafe unsafe = null;
@@ -132,5 +144,41 @@ public class UnsafeAccess {
         }
 
         return 0L;
+    }
+
+    public static long getIndexOffset(final boolean[] array, final long index) {
+        return ARRAY_BOOLEAN_BASE_OFFSET + index << ARRAY_BOOLEAN_INDEX_SHIFT;
+    }
+
+    public static long getIndexOffset(final byte[] array, final long index) {
+        return ARRAY_BYTE_BASE_OFFSET + index << ARRAY_BYTE_INDEX_SHIFT;
+    }
+
+    public static long getIndexOffset(final short[] array, final long index) {
+        return ARRAY_SHORT_BASE_OFFSET + index << ARRAY_SHORT_INDEX_SHIFT;
+    }
+
+    public static long getIndexOffset(final char[] array, final long index) {
+        return ARRAY_CHAR_BASE_OFFSET + index << ARRAY_CHAR_INDEX_SHIFT;
+    }
+
+    public static long getIndexOffset(final int[] array, final long index) {
+        return ARRAY_INT_BASE_OFFSET + index << ARRAY_INT_INDEX_SHIFT;
+    }
+
+    public static long getIndexOffset(final long[] array, final long index) {
+        return ARRAY_LONG_BASE_OFFSET + index << ARRAY_LONG_INDEX_SHIFT;
+    }
+
+    public static long getIndexOffset(final float[] array, final long index) {
+        return ARRAY_FLOAT_BASE_OFFSET + index << ARRAY_FLOAT_INDEX_SHIFT;
+    }
+
+    public static long getIndexOffset(final double[] array, final long index) {
+        return ARRAY_DOUBLE_BASE_OFFSET + index << ARRAY_DOUBLE_INDEX_SHIFT;
+    }
+
+    public static <T> long getIndexOffset(final T[] array, final long index) {
+        return ARRAY_OBJECT_BASE_OFFSET + index << ARRAY_OBJECT_INDEX_SHIFT;
     }
 }
