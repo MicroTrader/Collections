@@ -99,6 +99,8 @@ import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableShort;
 import sun.misc.Unsafe;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * Wrapper class
  *
@@ -121,28 +123,44 @@ public final class MutableShort extends Number
         value = i;
     }
 
-    public final static short pack(final byte... values) {
+    public final static short pack(final String values, final String charsetName) {
+        try {
+            return pack(0, values.getBytes(charsetName));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Charset not supported", e);
+        }
+    }
+
+    public final static short pack(final String values) {
+        return pack(values, "US-ASCII");
+    }
+
+    public final static short pack(final int index, final byte... values) {
         short value = 0;
 
-        switch (values.length) {
+        final int remainder = Math.max(values.length - index, 0);
+
+        switch (remainder) {
             default:
             case 2:
-                value += values[1] << Byte.SIZE;
+                value += values[index + 1] << Byte.SIZE;
             case 1:
-                value += values[0];
+                value += values[index];
             case 0:
         }
 
         return value;
     }
 
-    public final static void unpack(final byte[] result, final short value) {
-        switch (result.length) {
+    public final static void unpack(final int index, final byte[] result, final short value) {
+        final int remainder = Math.max(result.length - index, 0);
+
+        switch (remainder) {
             default:
             case 2:
-                result[1] = (byte) ((value & 0xFF00) >> Byte.SIZE);
+                result[index + 1] = (byte) ((value & 0xFF00) >> Byte.SIZE);
             case 1:
-                result[0] = (byte) (value & 0x00FF);
+                result[index] = (byte) (value & 0x00FF);
             case 0:
         }
     }
