@@ -107,15 +107,15 @@ import static sun.misc.Unsafe.*;
 public class UnsafeAccess {
     public static final Unsafe UNSAFE;
 
-    public static final long ARRAY_BOOLEAN_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_BOOLEAN_INDEX_SCALE) - 1;
-    public static final long ARRAY_BYTE_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_BYTE_INDEX_SCALE) - 1;
-    public static final long ARRAY_SHORT_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_SHORT_INDEX_SCALE) - 1;
-    public static final long ARRAY_CHAR_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_CHAR_INDEX_SCALE) - 1;
-    public static final long ARRAY_INT_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_INT_INDEX_SCALE) - 1;
-    public static final long ARRAY_LONG_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_LONG_INDEX_SCALE) - 1;
-    public static final long ARRAY_FLOAT_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_FLOAT_INDEX_SCALE) - 1;
-    public static final long ARRAY_DOUBLE_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_DOUBLE_INDEX_SCALE) - 1;
-    public static final long ARRAY_OBJECT_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_OBJECT_INDEX_SCALE) - 1;
+    public static final long ARRAY_BOOLEAN_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_BOOLEAN_INDEX_SCALE) - 1L;
+    public static final long ARRAY_BYTE_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_BYTE_INDEX_SCALE) - 1L;
+    public static final long ARRAY_SHORT_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_SHORT_INDEX_SCALE) - 1L;
+    public static final long ARRAY_CHAR_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_CHAR_INDEX_SCALE) - 1L;
+    public static final long ARRAY_INT_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_INT_INDEX_SCALE) - 1L;
+    public static final long ARRAY_LONG_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_LONG_INDEX_SCALE) - 1L;
+    public static final long ARRAY_FLOAT_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_FLOAT_INDEX_SCALE) - 1L;
+    public static final long ARRAY_DOUBLE_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_DOUBLE_INDEX_SCALE) - 1L;
+    public static final long ARRAY_OBJECT_INDEX_SHIFT = Long.SIZE - Long.numberOfLeadingZeros(ARRAY_OBJECT_INDEX_SCALE) - 1L;
 
     static {
         Unsafe unsafe = null;
