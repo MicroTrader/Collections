@@ -152,7 +152,7 @@ public class IntrinsicHelpers {
         return new StructuredArrayBuilder<S, T>(structuredArrayModel(arrayCtorAndArgs.getConstructor().getDeclaringClass(), subArrayModel, length)).arrayCtorAndArgs(arrayCtorAndArgs).resolve();
     }
 
-    public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> structuredArrayBuilder(final CtorAndArgs<S> arrayCtorAndArgs, final PrimitiveArrayModel<?> subArrayModel, final long length) {
+    public static <S extends StructuredArray<T>, T, U> StructuredArrayBuilder<S, T> structuredArrayBuilder(final CtorAndArgs<S> arrayCtorAndArgs, final PrimitiveArrayModel<?> subArrayModel, final long length) {
         return new StructuredArrayBuilder<S, T>(structuredArrayModel(arrayCtorAndArgs.getConstructor().getDeclaringClass(), subArrayModel, length)).arrayCtorAndArgs(arrayCtorAndArgs).resolve();
     }
 
