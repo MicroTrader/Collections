@@ -103,29 +103,30 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections.indices;
+package com.sakrio.collections;
+
+import com.sakrio.collections.arrays.IntrinsicHelpers;
+import org.ObjectLayout.CtorAndArgs;
 
 /**
- * Created by sirinath on 04/09/2016.
+ * Created by sirinath on 03/09/2016.
  */
-public class IndexItem<T> {
-    private T item;
+public final class ObjectSupplier<U> extends BaseSupplier<U> {
+    private final CtorAndArgs<U> ctorAndArgs;
 
-    private long index;
-
-    public T getItem() {
-        return item;
+    public ObjectSupplier(final CtorAndArgs<U> ctorAndArgs) {
+        this.ctorAndArgs = ctorAndArgs;
     }
 
-    public void setItem(T item) {
-        this.item = item;
+    public ObjectSupplier() {
+        this.ctorAndArgs = null;
     }
 
-    public long getIndex() {
-        return index;
-    }
-
-    public void setIndex(long index) {
-        this.index = index;
+    @Override
+    public final U apply(final String field, final Object containingObject) {
+        if (ctorAndArgs == null)
+            return IntrinsicHelpers.constructWithin(field, containingObject);
+        else
+            return IntrinsicHelpers.constructWithin(field, containingObject, ctorAndArgs);
     }
 }

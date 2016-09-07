@@ -103,22 +103,41 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections.indices;
+package com.sakrio.collections.arrays;
 
-import com.koloboke.compile.KolobokeMap;
-import com.koloboke.compile.mutability.Updatable;
+import com.sakrio.collections.BaseSupplier;
 
 /**
- * Created by sirinath on 05/09/2016.
+ * Created by sirinath on 06/09/2016.
  */
-@KolobokeMap
-@Updatable
-public abstract class Indexer {
-    static Indexer withExpectedSize(int expectedSize) {
-        return new KolobokeIndexer(expectedSize);
+public abstract class AbstractCircularArrayProxy<S, T> extends AbstractArrayProxy<S, T> {
+    protected <U extends BaseSupplier<S>> AbstractCircularArrayProxy(U instanceSupplier) {
+        super(instanceSupplier);
     }
 
-    public abstract void justPut(long key, long value);
+    private long roll(final long index) {
+        return isPowerOf2() ? index & getMask() : index > getMask() ? index - getMask() : index < 0 ? index + getMask() : index;
+    }
 
-    abstract long get(long key);
+    public final T at(final long index) {
+        long theMarker = getMarker();
+        T theValue = underlyingIndex(roll(theMarker - index));
+
+        while (theMarker != (theMarker = getMarkerVolatile())) {
+            theValue = underlyingIndex(roll(theMarker - index));
+        }
+
+        return theValue;
+    }
+
+    public final void add(final T value) {
+        long theMarker = getMarker();
+        long next = roll(theMarker + 1);
+        while (!compareAndSwapLongMarker(theMarker, next)) {
+            theMarker = getMarkerVolatile();
+            next = roll(theMarker + 1);
+        }
+
+        underlyingIndex(next, value);
+    }
 }

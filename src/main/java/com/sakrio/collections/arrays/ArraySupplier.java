@@ -108,6 +108,6 @@ package com.sakrio.collections.arrays;
 /**
  * Created by sirinath on 04/09/2016.
  */
-public abstract class ArraySupplier<U> extends BaseSupplier<U> {
+public abstract class ArraySupplier<U> extends BaseArraySupplier<U> {
     public abstract long getLength();
 }

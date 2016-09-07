@@ -108,24 +108,17 @@ package com.sakrio.collections.arrays;
 import org.ObjectLayout.CtorAndArgs;
 
 /**
- * Created by sirinath on 03/09/2016.
+ * Created by sirinath on 06/09/2016.
  */
-public final class ObjectSupplier<U> extends BaseSupplier<U> {
-    private final CtorAndArgs<U> ctorAndArgs;
+public final class ObjectProxyArraySupplier<S> extends BaseArraySupplier<S> {
+    private final CtorAndArgs<S> ctorAndArgs;
 
-    public ObjectSupplier(final CtorAndArgs<U> ctorAndArgs) {
+    public ObjectProxyArraySupplier(final CtorAndArgs<S> ctorAndArgs) {
         this.ctorAndArgs = ctorAndArgs;
     }
 
-    public ObjectSupplier() {
-        this.ctorAndArgs = null;
-    }
-
     @Override
-    public final U apply(final String field, final Object containingObject) {
-        if (ctorAndArgs == null)
-            return IntrinsicHelpers.constructWithin(field, containingObject);
-        else
-            return IntrinsicHelpers.constructWithin(field, containingObject, ctorAndArgs);
+    public final S apply(final String field, final Object containingObject) {
+        return IntrinsicHelpers.constructWithin(field, containingObject, ctorAndArgs);
     }
 }
