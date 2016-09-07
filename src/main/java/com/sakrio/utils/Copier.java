@@ -103,41 +103,11 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections.arrays;
-
-import com.sakrio.collections.BaseSupplier;
+package com.sakrio.utils;
 
 /**
- * Created by sirinath on 06/09/2016.
+ * Created by sirinath on 07/09/2016.
  */
-public abstract class AbstractCircularArrayProxy<S, T> extends AbstractArrayProxy<S, T> {
-    protected <U extends BaseSupplier<S>> AbstractCircularArrayProxy(U instanceSupplier) {
-        super(instanceSupplier);
-    }
-
-    private long roll(final long index) {
-        return isPowerOf2() ? index & getMask() : index > getMask() ? index - getMask() : index < 0 ? index + getMask() : index;
-    }
-
-    public final T at(final long index) {
-        long theMarker = getMarker();
-        T theValue = underlyingIndex(roll(theMarker - index));
-
-        while (theMarker != (theMarker = getMarkerVolatile())) {
-            theValue = underlyingIndex(roll(theMarker - index));
-        }
-
-        return theValue;
-    }
-
-    public final void add(final T value) {
-        long theMarker = getMarker();
-        long next = roll(theMarker + 1);
-        while (!compareAndSwapLongMarker(theMarker, next)) {
-            theMarker = getMarkerVolatile();
-            next = roll(theMarker + 1);
-        }
-
-        underlyingIndex(next, value);
-    }
+public interface Copier<T extends Copier<T>> {
+    void copyFrom(final T other);
 }

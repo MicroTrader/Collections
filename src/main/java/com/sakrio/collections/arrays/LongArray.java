@@ -105,112 +105,24 @@
 
 package com.sakrio.collections.arrays;
 
-import com.esotericsoftware.reflectasm.FieldAccess;
-import com.esotericsoftware.reflectasm.MethodAccess;
-import com.sakrio.collections.BaseSupplier;
-import com.sakrio.utils.UnsafeAccess;
-import org.ObjectLayout.Intrinsic;
-import sun.misc.Contended;
-import sun.misc.Unsafe;
-
-import java.util.Arrays;
+import com.sakrio.collections.arrays.templates.AbstractLongArrayProxy;
+import org.ObjectLayout.PrimitiveLongArray;
 
 /**
- * Created by sirinath on 31/08/2016.
+ * Created by sirinath on 06/09/2016.
  */
-public abstract class AbstractArrayProxy<S, T> {
-    protected static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
-    protected static long markerOffset = UnsafeAccess.getFieldOffset(AbstractArrayProxy.class, "marker");
-
-    @Intrinsic
-    private final S data;
-
-    private final long length;
-    private final boolean isPowerOf2;
-    private final long mask;
-
-    @Contended
-    private long marker = 0;
-
-    protected <U extends BaseSupplier<S>> AbstractArrayProxy(final U instanceSupplier) {
-        data = instanceSupplier.apply("data", this);
-
-        long theLength = -1;
-
-        final String[] names = {"length", "size", "count", "items"};
-        final Class<?>[] classes = {data.getClass(), instanceSupplier.getClass()};
-
-        outerLoop:
-        for (Class<?> clazz : classes) {
-            final MethodAccess methodAccess = MethodAccess.get(clazz);
-            final FieldAccess fieldAccess = FieldAccess.get(clazz);
-
-            for (String name : names) {
-                try {
-                    theLength = (long) methodAccess.invoke(data, "get" + name.substring(0, 1).toUpperCase() + name.substring(1));
-                    break outerLoop;
-                } catch (Throwable t) {
-                }
-
-                try {
-                    theLength = (long) methodAccess.invoke(data, name);
-                    break outerLoop;
-                } catch (Throwable t) {
-                }
-
-                try {
-                    theLength = (long) fieldAccess.get(data, name);
-                    break outerLoop;
-                } catch (Throwable t) {
-                }
-            }
-        }
-
-        if (theLength == -1)
-            throw new IllegalStateException("Cannot deduce the array length! The data field or instanceSupplier parameter should contain accessible getters and / or fields for: " + Arrays.toString(names));
-
-        this.length = theLength;
-        this.isPowerOf2 = (length & (length - 1)) == 0;
-        this.mask = isPowerOf2 ? (1 << (Long.SIZE - Long.numberOfLeadingZeros(length - 1))) : (length - 1);
+public class LongArray extends AbstractLongArrayProxy<PrimitiveLongArray> {
+    public LongArray(final long length) {
+        super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(PrimitiveLongArray.class, length)));
     }
 
-    public final long getLength() {
-        return length;
+    @Override
+    public long get(final long index) {
+        return getUnderlyingArray().get(index);
     }
 
-    public final S getData() {
-        return data;
+    @Override
+    public void set(final long index, final long value) {
+        getUnderlyingArray().set(index, value);
     }
-
-    protected final long getMarker() {
-        return marker;
-    }
-
-    protected final void setMarker(long marker) {
-        this.marker = marker;
-    }
-
-    protected final long getMarkerVolatile() {
-        return UNSAFE.getLongVolatile(this, markerOffset);
-    }
-
-    protected final boolean compareAndSwapLongMarker(final long expected, final long next) {
-        return UNSAFE.compareAndSwapLong(this, markerOffset, expected, next);
-    }
-
-    protected final long getMask() {
-        return mask;
-    }
-
-    protected final boolean isPowerOf2() {
-        return isPowerOf2;
-    }
-
-    protected abstract T underlyingIndex(final long index);
-
-    protected abstract void underlyingIndex(final long index, final T value);
-
-    public abstract T at(final long index);
-
-    public abstract void add(final T value);
 }

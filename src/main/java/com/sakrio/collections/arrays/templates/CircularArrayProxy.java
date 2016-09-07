@@ -103,43 +103,38 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
+package com.sakrio.collections.arrays.templates;
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+import static sun.font.AttributeValues.getMask;
 
-defaultTasks 'clean', 'build', 'jar'
+/**
+ * Created by sirinath on 07/09/2016.
+ */
+public interface CircularArrayProxy {
+    long getMarker();
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+    long getMarkerVolatile();
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    boolean compareAndSwapLongMarker(final long expected, final long next);
 
-repositories {
-    jcenter()
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
+    boolean isPowerOf2();
 
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'it.unimi.dsi:fastutil:7.0.13'
+    default long roll(final long index) {
+        return isPowerOf2() ? index & getMask() : index > getMask() ? index - getMask() : index < 0 ? index + getMask() : index;
+    }
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+    default long roll(final long marker, final long index) {
+        return roll(marker - index);
+    }
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+    default long nextSlot() {
+        long theMarker = getMarker();
+        long next = roll(theMarker + 1);
+        while (!compareAndSwapLongMarker(theMarker, next)) {
+            theMarker = getMarkerVolatile();
+            next = roll(theMarker + 1);
+        }
+
+        return next;
     }
 }

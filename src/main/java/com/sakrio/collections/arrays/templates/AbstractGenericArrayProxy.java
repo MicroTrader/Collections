@@ -103,43 +103,171 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
+package com.sakrio.collections.arrays.templates;
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+import com.sakrio.collections.BaseSupplier;
+import com.sakrio.collections.arrays.ArraySupplier;
+import com.sakrio.utils.UnsafeAccess;
+import org.ObjectLayout.*;
+import sun.misc.Unsafe;
 
-defaultTasks 'clean', 'build', 'jar'
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collection;
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+/**
+ * Created by sirinath on 31/08/2016.
+ */
+public abstract class AbstractGenericArrayProxy<S> implements ArrayProxy<S> {
+    protected static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    @Intrinsic
+    private final S data;
 
-repositories {
-    jcenter()
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
+    private final long length;
 
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'it.unimi.dsi:fastutil:7.0.13'
+    protected <U extends BaseSupplier<S>> AbstractGenericArrayProxy(final U instanceSupplier) {
+        data = instanceSupplier.apply("data", this);
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+        long theLength = -1;
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+        for (; ; ) {
+            try {
+                theLength = ((ArraySupplier) instanceSupplier).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((Collection) data).size();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((StructuredArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveByteArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveCharArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveShortArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveIntArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveLongArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveFloatArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveDoubleArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            Class cls = data.getClass();
+
+            try {
+                Method m = cls.getMethod("getLength");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("length");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Field f = cls.getField("length");
+                theLength = f.getLong(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("getSize");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("size");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Field f = cls.getField("size");
+                theLength = f.getLong(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("getCount");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("count");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Field f = cls.getField("count");
+                theLength = f.getLong(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            throw new IllegalStateException("Array is not the expected types nor does not have expected fields or methods");
+        }
+
+        this.length = theLength;
+    }
+
+    public final long getLength() {
+        return length;
+    }
+
+    public final S getUnderlyingArray() {
+        return data;
     }
 }

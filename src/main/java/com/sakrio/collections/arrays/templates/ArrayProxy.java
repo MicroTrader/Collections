@@ -103,16 +103,13 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections.indices;
-
-import com.sakrio.collections.BaseSupplier;
-import com.sakrio.collections.arrays.AbstractArrayProxy;
+package com.sakrio.collections.arrays.templates;
 
 /**
- * Created by sirinath on 06/09/2016.
+ * Created by sirinath on 07/09/2016.
  */
-public abstract class AbstractIndexer<S, T> extends AbstractArrayProxy<S, T> {
-    public AbstractIndexer(BaseSupplier instanceSupplier) {
-        super(instanceSupplier);
-    }
+public interface ArrayProxy<S> {
+    long getLength();
+
+    S getUnderlyingArray();
 }

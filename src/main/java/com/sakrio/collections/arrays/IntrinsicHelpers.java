@@ -120,6 +120,10 @@ public class IntrinsicHelpers {
         return new StructuredArrayModel<S, T>(length);
     }
 
+    public static <S extends StructuredArray<T>, T> StructuredArrayModel<S, T> structuredArrayModel(final Class<S> arrayClass, final Class<T> elementClass, final long length) {
+        return new StructuredArrayModel<S, T>(arrayClass, elementClass, length);
+    }
+
     public static <S extends StructuredArray<T>, T extends StructuredArray<U>, U> StructuredArrayModel<S, T> structuredArrayModel(final Class<S> arrayClass, final StructuredArrayModel<T, U> subArrayModel, final long length) {
         return new StructuredArrayModel<S, T>(arrayClass, subArrayModel, length);
     }
@@ -142,6 +146,10 @@ public class IntrinsicHelpers {
 
     public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> structuredArrayBuilder(final long length) {
         return new StructuredArrayBuilder<S, T>(structuredArrayModel(length)).resolve();
+    }
+
+    public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> structuredArrayBuilder(final Class<S> arrayClass, final Class<T> elementClass, final long length) {
+        return new StructuredArrayBuilder<S, T>(structuredArrayModel(arrayClass, elementClass, length)).resolve();
     }
 
     public static <S extends StructuredArray<T>, T> StructuredArrayBuilder<S, T> structuredArrayBuilder(final CtorAndArgs<S> arrayCtorAndArgs, final CtorAndArgs<T> elementCtorAndArgs, final long length) {

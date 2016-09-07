@@ -103,43 +103,26 @@
  * _______________________________________________________________________________
  */
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
+package com.sakrio.collections.arrays;
 
-group 'com.sakrio'
-version '0.1.0-SNAPSHOT'
+import com.sakrio.collections.arrays.templates.AbstractLongCircularArrayProxy;
+import org.ObjectLayout.PrimitiveLongArray;
 
-defaultTasks 'clean', 'build', 'jar'
+/**
+ * Created by sirinath on 06/09/2016.
+ */
+public class LongCircularArray extends AbstractLongCircularArrayProxy<PrimitiveLongArray> {
+    protected LongCircularArray(final long length) {
+        super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(PrimitiveLongArray.class, length)));
+    }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
+    @Override
+    public long get(final long index) {
+        return getUnderlyingArray().get(index);
+    }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-repositories {
-    jcenter()
-    mavenCentral()
-    mavenLocal()
-    ivy { url System.getProperty("user.home") + '/.ivy2' }
-    maven { url "https://jitpack.io" }
-}
-
-dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
-    compile 'it.unimi.dsi:fastutil:7.0.13'
-
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled = true
+    @Override
+    public void set(final long index, final long value) {
+        getUnderlyingArray().set(index, value);
     }
 }
