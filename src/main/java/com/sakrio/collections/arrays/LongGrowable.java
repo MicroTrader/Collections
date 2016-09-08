@@ -112,8 +112,8 @@ import it.unimi.dsi.fastutil.longs.LongBigArrayBigList;
 /**
  * Created by sirinath on 06/09/2016.
  */
-public class LongList extends AbstractGenericArrayProxy<LongBigArrayBigList> implements LongArrayProxy<LongBigArrayBigList> {
-    public LongList() {
+public class LongGrowable extends AbstractGenericArrayProxy<LongBigArrayBigList> implements LongArrayProxy<LongBigArrayBigList> {
+    public LongGrowable() {
         super(new ObjectProxyArraySupplier<>(IntrinsicHelpers.ctorAndArgs(LongBigArrayBigList.class)));
     }
 
