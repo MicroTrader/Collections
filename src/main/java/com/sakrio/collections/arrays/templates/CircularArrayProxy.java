@@ -123,10 +123,6 @@ public interface CircularArrayProxy {
         return isPowerOf2() ? index & getMask() : index > getMask() ? index - getMask() : index < 0 ? index + getMask() : index;
     }
 
-    default long roll(final long marker, final long index) {
-        return roll(marker - index);
-    }
-
     default long nextSlot() {
         long theMarker = getMarker();
         long next = roll(theMarker + 1);

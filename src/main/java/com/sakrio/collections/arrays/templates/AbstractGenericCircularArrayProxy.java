@@ -145,4 +145,14 @@ public abstract class AbstractGenericCircularArrayProxy<S> extends AbstractGener
     public final boolean compareAndSwapLongMarker(final long expected, final long next) {
         return UNSAFE.compareAndSwapLong(this, markerOffset, expected, next);
     }
+
+    @Override
+    public final long nextSlot() {
+        return CircularArrayProxy.super.nextSlot();
+    }
+
+    @Override
+    public final long roll(final long index) {
+        return CircularArrayProxy.super.roll(index);
+    }
 }
