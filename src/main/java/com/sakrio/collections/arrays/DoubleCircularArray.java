@@ -113,7 +113,7 @@ import org.ObjectLayout.PrimitiveDoubleArray;
  * Created by sirinath on 06/09/2016.
  */
 public class DoubleCircularArray extends AbstractGenericCircularArrayProxy<PrimitiveDoubleArray> implements DoubleCircularArrayProxy<PrimitiveDoubleArray> {
-    protected DoubleCircularArray(final long length) {
+    public DoubleCircularArray(final long length) {
         super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(PrimitiveDoubleArray.class, length)));
     }
 

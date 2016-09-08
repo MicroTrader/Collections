@@ -113,7 +113,7 @@ import org.ObjectLayout.PrimitiveFloatArray;
  * Created by sirinath on 06/09/2016.
  */
 public class FloatCircularArray extends AbstractGenericCircularArrayProxy<PrimitiveFloatArray> implements FloatCircularArrayProxy<PrimitiveFloatArray> {
-    protected FloatCircularArray(final long length) {
+    public FloatCircularArray(final long length) {
         super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(PrimitiveFloatArray.class, length)));
     }
 

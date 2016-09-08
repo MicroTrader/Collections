@@ -113,7 +113,7 @@ import org.ObjectLayout.PrimitiveLongArray;
  * Created by sirinath on 06/09/2016.
  */
 public class LongCircularArray extends AbstractGenericCircularArrayProxy<PrimitiveLongArray> implements LongCircularArrayProxy<PrimitiveLongArray> {
-    protected LongCircularArray(final long length) {
+    public LongCircularArray(final long length) {
         super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(PrimitiveLongArray.class, length)));
     }
 

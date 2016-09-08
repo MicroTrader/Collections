@@ -113,7 +113,7 @@ import org.ObjectLayout.PrimitiveIntArray;
  * Created by sirinath on 06/09/2016.
  */
 public class IntCircularArray extends AbstractGenericCircularArrayProxy<PrimitiveIntArray> implements IntCircularArrayProxy<PrimitiveIntArray> {
-    protected IntCircularArray(final long length) {
+    public IntCircularArray(final long length) {
         super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(PrimitiveIntArray.class, length)));
     }
 

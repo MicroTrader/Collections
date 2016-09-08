@@ -113,7 +113,7 @@ import org.ObjectLayout.ReferenceArray;
  * Created by sirinath on 06/09/2016.
  */
 public class ObjectCircularArray<K> extends AbstractGenericCircularArrayProxy<ReferenceArray<K>> implements ObjectCircularArrayProxy<ReferenceArray<K>, K> {
-    protected ObjectCircularArray(final long length) {
+    public ObjectCircularArray(final long length) {
         super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(ReferenceArray.class, length)));
     }
 
