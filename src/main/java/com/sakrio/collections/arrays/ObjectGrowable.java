@@ -103,15 +103,27 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections.arrays.templates;
+package com.sakrio.collections.arrays;
 
-import com.sakrio.collections.BaseSupplier;
+import com.sakrio.collections.arrays.templates.AbstractGenericArrayProxy;
+import com.sakrio.collections.arrays.templates.ObjectArrayProxy;
+import it.unimi.dsi.fastutil.objects.ObjectBigArrayBigList;
 
 /**
- * Created by sirinath on 31/08/2016.
+ * Created by sirinath on 06/09/2016.
  */
-public abstract class AbstractLongArrayProxy<S> extends AbstractGenericArrayProxy<S> implements LongArrayProxy<S> {
-    protected <U extends BaseSupplier<S>> AbstractLongArrayProxy(U instanceSupplier) {
-        super(instanceSupplier);
+public class ObjectGrowable<K> extends AbstractGenericArrayProxy<ObjectBigArrayBigList<K>> implements ObjectArrayProxy<ObjectBigArrayBigList<K>, K> {
+    public ObjectGrowable() {
+        super(new ObjectProxyArraySupplier(IntrinsicHelpers.ctorAndArgs(ObjectBigArrayBigList.class)));
+    }
+
+    @Override
+    public K get(final long index) {
+        return getUnderlyingArray().get(index);
+    }
+
+    @Override
+    public void set(final long index, final K value) {
+        getUnderlyingArray().set(index, value);
     }
 }

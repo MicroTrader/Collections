@@ -105,24 +105,25 @@
 
 package com.sakrio.collections.arrays;
 
-import com.sakrio.collections.arrays.templates.AbstractObjectArrayProxy;
-import it.unimi.dsi.fastutil.objects.ObjectBigArrayBigList;
+import com.sakrio.collections.arrays.templates.AbstractGenericArrayProxy;
+import com.sakrio.collections.arrays.templates.FloatArrayProxy;
+import org.ObjectLayout.PrimitiveFloatArray;
 
 /**
  * Created by sirinath on 06/09/2016.
  */
-public class ObjectList<K> extends AbstractObjectArrayProxy<ObjectBigArrayBigList<K>, K> {
-    public ObjectList() {
-        super(new ObjectProxyArraySupplier(IntrinsicHelpers.ctorAndArgs(ObjectBigArrayBigList.class)));
+public class FloatArray extends AbstractGenericArrayProxy<PrimitiveFloatArray> implements FloatArrayProxy<PrimitiveFloatArray> {
+    public FloatArray(final long length) {
+        super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(PrimitiveFloatArray.class, length)));
     }
 
     @Override
-    public K get(final long index) {
+    public float get(final long index) {
         return getUnderlyingArray().get(index);
     }
 
     @Override
-    public void set(final long index, final K value) {
+    public void set(final long index, final float value) {
         getUnderlyingArray().set(index, value);
     }
 }

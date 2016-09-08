@@ -105,13 +105,14 @@
 
 package com.sakrio.collections.arrays;
 
-import com.sakrio.collections.arrays.templates.AbstractLongArrayProxy;
+import com.sakrio.collections.arrays.templates.AbstractGenericArrayProxy;
+import com.sakrio.collections.arrays.templates.LongArrayProxy;
 import org.ObjectLayout.PrimitiveLongArray;
 
 /**
  * Created by sirinath on 06/09/2016.
  */
-public class LongArray extends AbstractLongArrayProxy<PrimitiveLongArray> {
+public class LongArray extends AbstractGenericArrayProxy<PrimitiveLongArray> implements LongArrayProxy<PrimitiveLongArray> {
     public LongArray(final long length) {
         super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(PrimitiveLongArray.class, length)));
     }

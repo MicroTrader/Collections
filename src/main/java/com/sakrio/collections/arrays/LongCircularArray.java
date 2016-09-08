@@ -105,13 +105,14 @@
 
 package com.sakrio.collections.arrays;
 
-import com.sakrio.collections.arrays.templates.AbstractLongCircularArrayProxy;
+import com.sakrio.collections.arrays.templates.AbstractGenericCircularArrayProxy;
+import com.sakrio.collections.arrays.templates.LongCircularArrayProxy;
 import org.ObjectLayout.PrimitiveLongArray;
 
 /**
  * Created by sirinath on 06/09/2016.
  */
-public class LongCircularArray extends AbstractLongCircularArrayProxy<PrimitiveLongArray> {
+public class LongCircularArray extends AbstractGenericCircularArrayProxy<PrimitiveLongArray> implements LongCircularArrayProxy<PrimitiveLongArray> {
     protected LongCircularArray(final long length) {
         super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(PrimitiveLongArray.class, length)));
     }

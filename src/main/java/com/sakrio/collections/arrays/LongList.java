@@ -105,13 +105,14 @@
 
 package com.sakrio.collections.arrays;
 
-import com.sakrio.collections.arrays.templates.AbstractLongArrayProxy;
+import com.sakrio.collections.arrays.templates.AbstractGenericArrayProxy;
+import com.sakrio.collections.arrays.templates.LongArrayProxy;
 import it.unimi.dsi.fastutil.longs.LongBigArrayBigList;
 
 /**
  * Created by sirinath on 06/09/2016.
  */
-public class LongList extends AbstractLongArrayProxy<LongBigArrayBigList> {
+public class LongList extends AbstractGenericArrayProxy<LongBigArrayBigList> implements LongArrayProxy<LongBigArrayBigList> {
     public LongList() {
         super(new ObjectProxyArraySupplier<>(IntrinsicHelpers.ctorAndArgs(LongBigArrayBigList.class)));
     }

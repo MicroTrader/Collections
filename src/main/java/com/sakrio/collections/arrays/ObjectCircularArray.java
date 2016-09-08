@@ -105,13 +105,14 @@
 
 package com.sakrio.collections.arrays;
 
-import com.sakrio.collections.arrays.templates.AbstractObjectCircularArrayProxy;
+import com.sakrio.collections.arrays.templates.AbstractGenericCircularArrayProxy;
+import com.sakrio.collections.arrays.templates.ObjectCircularArrayProxy;
 import org.ObjectLayout.ReferenceArray;
 
 /**
  * Created by sirinath on 06/09/2016.
  */
-public class ObjectCircularArray<K> extends AbstractObjectCircularArrayProxy<ReferenceArray<K>, K> {
+public class ObjectCircularArray<K> extends AbstractGenericCircularArrayProxy<ReferenceArray<K>> implements ObjectCircularArrayProxy<ReferenceArray<K>, K> {
     protected ObjectCircularArray(final long length) {
         super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(ReferenceArray.class, length)));
     }

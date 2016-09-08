@@ -106,24 +106,24 @@
 package com.sakrio.collections.arrays;
 
 import com.sakrio.collections.arrays.templates.AbstractGenericArrayProxy;
-import com.sakrio.collections.arrays.templates.ObjectArrayProxy;
-import org.ObjectLayout.ReferenceArray;
+import com.sakrio.collections.arrays.templates.IntArrayProxy;
+import org.ObjectLayout.PrimitiveIntArray;
 
 /**
  * Created by sirinath on 06/09/2016.
  */
-public class ObjectArray<K> extends AbstractGenericArrayProxy<ReferenceArray<K>> implements ObjectArrayProxy<ReferenceArray<K>, K> {
-    public ObjectArray(final long length) {
-        super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(ReferenceArray.class, length)));
+public class IntArray extends AbstractGenericArrayProxy<PrimitiveIntArray> implements IntArrayProxy<PrimitiveIntArray> {
+    public IntArray(final long length) {
+        super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(PrimitiveIntArray.class, length)));
     }
 
     @Override
-    public K get(final long index) {
+    public int get(final long index) {
         return getUnderlyingArray().get(index);
     }
 
     @Override
-    public void set(final long index, final K value) {
+    public void set(final long index, final int value) {
         getUnderlyingArray().set(index, value);
     }
 }

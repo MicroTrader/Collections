@@ -105,14 +105,15 @@
 
 package com.sakrio.collections.arrays;
 
-import com.sakrio.collections.arrays.templates.AbstractObjectArrayProxy;
+import com.sakrio.collections.arrays.templates.AbstractGenericArrayProxy;
+import com.sakrio.collections.arrays.templates.ObjectArrayProxy;
 import com.sakrio.utils.Copier;
 import org.ObjectLayout.StructuredArray;
 
 /**
  * Created by sirinath on 06/09/2016.
  */
-public class ObjectPooledArray<K extends Copier<K>> extends AbstractObjectArrayProxy<StructuredArray<K>, K> {
+public class ObjectPooledArray<K extends Copier<K>> extends AbstractGenericArrayProxy<StructuredArray<K>> implements ObjectArrayProxy<StructuredArray<K>, K> {
     public ObjectPooledArray(final Class<K> elementClass, final long length) {
         super(new StructuredArraySupplier(IntrinsicHelpers.structuredArrayBuilder(StructuredArray.class, elementClass, length)));
     }

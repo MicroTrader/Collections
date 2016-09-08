@@ -105,13 +105,11 @@
 
 package com.sakrio.collections.arrays.templates;
 
-import com.sakrio.collections.BaseSupplier;
-
 /**
- * Created by sirinath on 06/09/2016.
+ * Created by sirinath on 07/09/2016.
  */
-public abstract class AbstractObjectCircularArrayProxy<S, T> extends AbstractGenericCircularArrayProxy<S> implements ObjectCircularArrayProxy<S, T> {
-    protected <U extends BaseSupplier<S>> AbstractObjectCircularArrayProxy(U instanceSupplier) {
-        super(instanceSupplier);
-    }
+public interface DoubleArrayProxy<S> extends ArrayProxy<S> {
+    double get(final long index);
+
+    void set(final long index, final double value);
 }

@@ -145,7 +145,7 @@ public final class MutableLong extends Number
     }
 
     public final static long pack(final int from, final int to, final String values) {
-        return pack(from, to, values, "US-ASCII");
+        return pack(from, to, values, "UTF8");
     }
 
     public final static long pack(final int from, final int to, final byte... values) {

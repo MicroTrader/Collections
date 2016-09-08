@@ -112,4 +112,25 @@ public interface ObjectArrayProxy<S, T> extends ArrayProxy<S> {
     T get(final long index);
 
     void set(final long index, final T value);
+
+    /**
+     * Created by sirinath on 07/09/2016.
+     */
+    interface DoubleCircularArrayProxy<S> extends DoubleArrayProxy<S>, CircularArrayProxy {
+        default void add(final double value) {
+            final long next = nextSlot();
+            set(next, value);
+        }
+
+        default double at(final long index) {
+            long theMarker = getMarker();
+            double theValue = get(roll(theMarker - index));
+
+            while (theMarker != (theMarker = getMarkerVolatile())) {
+                theValue = get(roll(theMarker - index));
+            }
+
+            return theValue;
+        }
+    }
 }

@@ -103,27 +103,25 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections.arrays;
-
-import com.sakrio.collections.arrays.templates.AbstractGenericArrayProxy;
-import com.sakrio.collections.arrays.templates.ObjectArrayProxy;
-import org.ObjectLayout.ReferenceArray;
+package com.sakrio.collections.arrays.templates;
 
 /**
- * Created by sirinath on 06/09/2016.
+ * Created by sirinath on 07/09/2016.
  */
-public class ObjectArray<K> extends AbstractGenericArrayProxy<ReferenceArray<K>> implements ObjectArrayProxy<ReferenceArray<K>, K> {
-    public ObjectArray(final long length) {
-        super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(ReferenceArray.class, length)));
+public interface FloatCircularArrayProxy<S> extends FloatArrayProxy<S>, CircularArrayProxy {
+    default void add(final float value) {
+        final long next = nextSlot();
+        set(next, value);
     }
 
-    @Override
-    public K get(final long index) {
-        return getUnderlyingArray().get(index);
-    }
+    default float at(final long index) {
+        long theMarker = getMarker();
+        float theValue = get(roll(theMarker - index));
 
-    @Override
-    public void set(final long index, final K value) {
-        getUnderlyingArray().set(index, value);
+        while (theMarker != (theMarker = getMarkerVolatile())) {
+            theValue = get(roll(theMarker - index));
+        }
+
+        return theValue;
     }
 }
