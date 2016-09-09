@@ -2,9 +2,9 @@
  * _______________________________________________________________________________
  *
  * Copyright (c) 2016. Suminda Sirinath Salpitikorala Dharmasena and
- *     Project Contributors
+ *     Collections Project Contributors
  *
- * ${PROJECT_NAME}, is a collection of works and / or artifacts submitted
+ * Collections, is a collection of works and / or artifacts submitted
  * and / or contributed by multiple authors ("Project Contributors"),
  * collectively creating a larger work(s) and / or artifact(s) (the / this
  * "Project"). This project is licensed under the terms of either:
@@ -45,7 +45,7 @@
  * _______________________________________________________________________________
  *
  * Copyright (c) 2016. Suminda Sirinath Salpitikorala Dharmasena and
- *     Project Contributors
+ *     Collections Project Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@
  * _______________________________________________________________________________
  *
  * Copyright (c) 2016. Suminda Sirinath Salpitikorala Dharmasena and
- *     Project Contributors
+ *     Collections Project Contributors
  *
  * Licensed under the Academic Free License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@
  *
  * The MIT License (MIT)
  * Copyright (c) 2016. Suminda Sirinath Salpitikorala Dharmasena and
- *     Project Contributors
+ *     Collections Project Contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -105,23 +105,169 @@
 
 package com.sakrio.collections.arrays.templates;
 
+import com.sakrio.collections.BaseSupplier;
+import com.sakrio.collections.arrays.ArraySupplier;
+import com.sakrio.utils.UnsafeAccess;
+import org.ObjectLayout.*;
+import sun.misc.Unsafe;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collection;
+
 /**
- * Created by sirinath on 07/09/2016.
+ * Created by sirinath on 31/08/2016.
  */
-public interface LongCircularArrayProxy<S> extends LongArrayProxy<S>, CircularArrayProxy {
-    default void add(final long value) {
-        final long next = nextSlot();
-        set(next, value);
-    }
+public abstract class AbstractGenericArrayCartridge<S> implements ArrayCartridge<S> {
+    protected static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
 
-    default long at(final long index) {
-        long theMarker = getMarker();
-        long theValue = get(roll(theMarker - index));
+    @Intrinsic
+    private final S data;
 
-        while (theMarker != (theMarker = getMarkerVolatile())) {
-            theValue = get(roll(theMarker - index));
+    private final long length;
+
+    protected <U extends BaseSupplier<S>> AbstractGenericArrayCartridge(final U instanceSupplier) {
+        data = instanceSupplier.apply("data", this);
+
+        long theLength = -1;
+
+        for (; ; ) {
+            try {
+                theLength = ((ArraySupplier) instanceSupplier).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((Collection) data).size();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((StructuredArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveByteArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveCharArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveShortArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveIntArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveLongArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveFloatArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveDoubleArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            Class cls = data.getClass();
+
+            try {
+                Method m = cls.getMethod("getLength");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("length");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Field f = cls.getField("length");
+                theLength = f.getLong(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("getSize");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("size");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Field f = cls.getField("size");
+                theLength = f.getLong(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("getCount");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("count");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Field f = cls.getField("count");
+                theLength = f.getLong(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            throw new IllegalStateException("Array is not the expected types nor does not have expected fields or methods");
         }
 
-        return theValue;
+        this.length = theLength;
+    }
+
+    public final long getLength() {
+        return length;
+    }
+
+    public final S getUnderlyingArray() {
+        return data;
     }
 }

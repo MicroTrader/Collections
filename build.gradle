@@ -2,9 +2,9 @@
  * _______________________________________________________________________________
  *
  * Copyright (c) 2016. Suminda Sirinath Salpitikorala Dharmasena and
- *     Project Contributors
+ *     Collections Project Contributors
  *
- * ${PROJECT_NAME}, is a collection of works and / or artifacts submitted
+ * Collections, is a collection of works and / or artifacts submitted
  * and / or contributed by multiple authors ("Project Contributors"),
  * collectively creating a larger work(s) and / or artifact(s) (the / this
  * "Project"). This project is licensed under the terms of either:
@@ -45,7 +45,7 @@
  * _______________________________________________________________________________
  *
  * Copyright (c) 2016. Suminda Sirinath Salpitikorala Dharmasena and
- *     Project Contributors
+ *     Collections Project Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@
  * _______________________________________________________________________________
  *
  * Copyright (c) 2016. Suminda Sirinath Salpitikorala Dharmasena and
- *     Project Contributors
+ *     Collections Project Contributors
  *
  * Licensed under the Academic Free License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@
  *
  * The MIT License (MIT)
  * Copyright (c) 2016. Suminda Sirinath Salpitikorala Dharmasena and
- *     Project Contributors
+ *     Collections Project Contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -103,18 +103,65 @@
  * _______________________________________________________________________________
  */
 
+import java.nio.file.Files
+import java.nio.file.Paths
+
+buildscript {
+    repositories {
+        mavenLocal()
+        ivy { url System.getProperty("user.home") + '/.ivy2' }
+        maven { url "http://dl.bintray.com/sirinath/MicroTrader" }
+        jcenter()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
+    }
+    configurations.all {
+        resolutionStrategy {
+            cacheDynamicVersionsFor 0, 'seconds'
+            cacheChangingModulesFor 0, 'seconds'
+        }
+    }
+}
+
 plugins {
     id 'java'
     id 'jacoco'
     id 'com.github.kt3k.coveralls' version '2.6.3'
+    id 'com.jfrog.bintray' version '1.7'
+    id 'com.jfrog.artifactory' version '4.4.0'
+    id 'co.riiid.gradle' version '0.4.2'
 }
 
 apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'ivy-publish'
+apply plugin: 'signing'
 
 defaultTasks 'clean', 'build', 'jar', 'install'
 
-group 'com.sakrio'
+group 'com.github.MicroTrader'
 version '0.1.0-SNAPSHOT'
+description 'Data Structures for Internal Use'
+
+ext {
+    org = 'MicroTrader'
+    repo = org + '/' + project.name
+    releaseNotesFile = 'RELEASE_NOTES.md'
+    host = 'github.com'
+    hostUrl = 'https://' + host + '/'
+    orgUrl = hostUrl + org
+    websiteUrl = hostUrl + repo
+    vcsUrl = websiteUrl + '.git'
+    scmUrl = 'scm:git@' + host + ':' + repo + '.git'
+    issueTrackerUrl = websiteUrl + '/issues'
+    ossrhUsername = ((project.hasProperty('ossrhUsername') ? ossrhUsername : System.getenv('OSSRH_USER')) ?: System.getProperty('ossrh.user')) ?: ' '
+    ossrhPassword = ((project.hasProperty('ossrhPassword') ? ossrhPassword : System.getenv('OSSRH_PASSWORD')) ?: System.getProperty('ossrh.password')) ?: ' '
+    bintray_user = ((project.hasProperty('bintray_user') ? bintray_user : System.getenv('BINTRAY_USER')) ?: System.getProperty('bintray.user')) ?: ' '
+    bintray_api_key = ((project.hasProperty('bintray_api_key') ? bintray_api_key : System.getenv('BINTRAY_KEY')) ?: System.getProperty('bintray.apikey')) ?: ' '
+    artifactory_user = ((project.hasProperty('artifactory_user') ? artifactory_user : System.getenv('ARTIFACTORY_USER')) ?: System.getProperty('artifactory.user')) ?: ' '
+    artifactory_password = ((project.hasProperty('artifactory_password') ? artifactory_password : System.getenv('ARTIFACTORY_PASSWORD')) ?: System.getProperty('artifactory.password')) ?: ' '
+    github_api_key = ((project.hasProperty('github_api_key') ? github_api_key : System.getenv('GITHUB_KEY')) ?: System.getProperty('github.apikey')) ?: ' '
+}
 
 task wrapper(type: Wrapper) {
     gradleVersion = '3.0'
@@ -127,13 +174,14 @@ targetCompatibility = 1.8
 repositories {
     mavenLocal()
     ivy { url System.getProperty("user.home") + '/.ivy2' }
+    maven { url "http://dl.bintray.com/sirinath/MicroTrader" }
     jcenter()
     mavenCentral()
     maven { url "https://jitpack.io" }
 }
 
 dependencies {
-    compile 'com.github.ObjectLayout:ObjectLayout:-SNAPSHOT'
+    compile 'com.github.ObjectLayout:ObjectLayout:854efb835f'
     compile 'it.unimi.dsi:fastutil:7.0.13'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -144,4 +192,183 @@ jacocoTestReport {
         xml.enabled true
         html.enabled = true
     }
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from tasks.javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    publications {
+        ivyJava(IvyPublication) {
+            from components.java
+        }
+    }
+}
+
+bintray {
+    user = bintray_user
+    key = bintray_api_key
+
+    publications = ['mavenJava']
+
+    dryRun = false
+    publish = true
+
+    pkg {
+        name = project.name
+        repo = project.org
+        userOrg = project.org.toString().toLowerCase()
+
+        desc = project.description
+
+        githubRepo = project.repo
+        githubReleaseNotesFile = project.releaseNotesFile
+        websiteUrl = project.websiteUrl
+        vcsUrl = project.vcsUrl
+        issueTrackerUrl = project.issueTrackerUrl
+        licenses = ['Apache-2.0', 'AFL-3.0', 'MIT']
+        publicDownloadNumbers = true
+
+        version {
+            name = project.version
+
+            released = new Date()
+
+            vcsTag = 'v' + project.version
+
+            // TODO: Update when ready to publish in maven central
+            mavenCentralSync {
+                sync = false
+                user = ossrhUsername
+                password = ossrhPassword
+                close = '1'
+            }
+        }
+    }
+}
+
+artifactory {
+    contextUrl = 'http://localhost:8081/artifactory'
+    publish {
+        repository {
+            if (project.version.endsWith('-SNAPSHOT'))
+                repoKey = 'libs-snapshot-local'
+            else
+                repoKey = 'libs-release-local'
+
+            username = artifactory_user
+            password = artifactory_password
+        }
+        defaults {
+            publications('mavenJava', 'ivyJava')
+        }
+    }
+    resolve {
+        repoKey = 'jcenter'
+    }
+}
+
+artifacts {
+    archives jar
+
+    archives javadocJar
+    archives sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+ossrhUsername = (ossrhUsername ?: System.getenv('OSSRH_USER')) ?: System.getProperty('ossrh.user')
+ossrhPassword = (ossrhPassword ?: System.getenv('OSSRH_PASSWORD')) ?: System.getProperty('ossrh.password')
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name project.name
+                packaging 'jar'
+                description project.description
+                url project.websiteUrl
+
+                scm {
+                    url project.scmUrl
+                    connection project.scmUrl
+                    developerConnection project.scmUrl
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                    license {
+                        name 'Academic Free License, Version 3.0'
+                        url 'https://opensource.org/licenses/AFL-3.0'
+                        distribution 'repo'
+                    }
+                    license {
+                        name 'The MIT License'
+                        url 'https://opensource.org/licenses/MIT'
+                        distribution 'repo'
+                    }
+                }
+
+                organization {
+                    name project.org
+                    url project.orgUrl
+                }
+
+                developers {
+                    developer {
+                        id 'sirinath'
+                        name 'Suminda Sirinath Salpitikorala Dharmasena'
+                        url 'https://twitter.com/sirinath'
+                        email 'sirinath1978m@gmail.com'
+                    }
+                }
+            }
+        }
+    }
+}
+
+github {
+    owner = project.org
+    repo = project.name
+    token = github_api_key
+    tagName = project.version
+    targetCommitish = 'master'
+    name = 'v' + project.version
+    body = Files.exists(Paths.get('' + projectDir + '/' + releaseNotesFile)) ?
+            new File('' + projectDir + '/' + releaseNotesFile).text :
+            (Files.exists(Paths.get('' + baseDir + '/' + releaseNotesFile)) ?
+                    new File('' + baseDir + '/' + releaseNotesFile).text : '')
+    assets = [
+            "${buildDir}/libs/${project.name}-${project.version}.jar",
+            "${buildDir}/libs/${project.name}-${project.version}-javadoc.jar",
+            "${buildDir}/libs/${project.name}-${project.version}-sources.jar"
+    ]
 }
