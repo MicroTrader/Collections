@@ -103,153 +103,171 @@
  * _______________________________________________________________________________
  */
 
+package com.sakrio.collections.objectlayout.arrays.templates;
 
-package com.sakrio.utils.box.mutable;
-
+import com.sakrio.collections.objectlayout.BaseSupplier;
+import com.sakrio.collections.objectlayout.arrays.ArraySupplier;
 import com.sakrio.utils.UnsafeAccess;
-import com.sakrio.utils.box.BoxOnce;
-import com.sakrio.utils.box.immutable.ImmutableShort;
+import org.ObjectLayout.*;
 import sun.misc.Unsafe;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collection;
 
 /**
- * Wrapper class
- *
- * @author sirinath
+ * Created by sirinath on 31/08/2016.
  */
-@SuppressWarnings("serial")
-public final class MutableShort extends Number
-        implements BoxOnce<MutableShort> {
-    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableShort.class, "value");
-    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
-    /**
-     * Value
-     */
-    private short value;
+public abstract class AbstractGenericArrayCartridge<S> implements ArrayCartridge<S> {
+    protected static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
 
-    /**
-     * @param i Parameter
-     */
-    public MutableShort(final short i) {
-        value = i;
-    }
+    @Intrinsic
+    private final S data;
 
-    public final static short pack(final int from, final int to, final String values, final Charset charset) {
-        return pack(from, to, values.getBytes(charset));
-    }
+    private final long length;
 
-    public final static short pack(final int from, final int to, final String values) {
-        return pack(from, to, values, StandardCharsets.ISO_8859_1);
-    }
+    protected <U extends BaseSupplier<S>> AbstractGenericArrayCartridge(final U instanceSupplier) {
+        data = instanceSupplier.apply("data", this);
 
-    public final static short pack(final int from, final int to, final byte... values) {
-        short value = 0;
+        long theLength = -1;
 
-        final int last = Math.min(values.length, to);
-        final int remainder = Math.max(last - from, 0);
+        for (; ; ) {
+            try {
+                theLength = ((ArraySupplier) instanceSupplier).getLength();
+                break;
+            } catch (Throwable t) {
+            }
 
-        switch (remainder) {
-            default:
-            case 2:
-                value += values[from + 1] << Byte.SIZE;
-            case 1:
-                value += values[from];
-            case 0:
+            try {
+                theLength = ((Collection) data).size();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((StructuredArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveByteArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveCharArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveShortArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveIntArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveLongArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveFloatArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                theLength = ((PrimitiveDoubleArray) data).getLength();
+                break;
+            } catch (Throwable t) {
+            }
+
+            Class cls = data.getClass();
+
+            try {
+                Method m = cls.getMethod("getLength");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("length");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Field f = cls.getField("length");
+                theLength = f.getLong(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("getSize");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("size");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Field f = cls.getField("size");
+                theLength = f.getLong(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("getCount");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Method m = cls.getMethod("count");
+                theLength = (long) m.invoke(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            try {
+                Field f = cls.getField("count");
+                theLength = f.getLong(data);
+                break;
+            } catch (Throwable t) {
+            }
+
+            throw new IllegalStateException("Array is not the expected types nor does not have expected fields or methods");
         }
 
-        return value;
+        this.length = theLength;
     }
 
-    public final static void unpack(final int from, final int to, final byte[] result, final short value) {
-        final int last = Math.min(result.length, to);
-        final int remainder = Math.max(last - from, 0);
-
-        switch (remainder) {
-            default:
-            case 2:
-                result[from + 1] = (byte) ((value & 0xFF00) >> Byte.SIZE);
-            case 1:
-                result[from] = (byte) (value & 0x00FF);
-            case 0:
-        }
+    public final long getLength() {
+        return length;
     }
 
-    @Override
-    public final String toString() {
-        return String.valueOf(value);
-    }
-
-    public final short getValue() {
-        return value;
-    }
-
-    public final void setValue(final short value) {
-        this.value = value;
-    }
-
-    public final short get() {
-        return value;
-    }
-
-    public final short getValueVolatile() {
-        return UNSAFE.getShortVolatile(this, valueFieldOffset);
-    }
-
-    public final void setValueVolatile(final short value) {
-        UNSAFE.putShortVolatile(this, valueFieldOffset, value);
-    }
-
-    public final void set(final short value) {
-        this.value = value;
-    }
-
-    @Override
-    public final boolean equals(Object other) {
-        if (other instanceof MutableShort)
-            return value == ((MutableShort) other).getValue();
-        else if (other instanceof ImmutableShort)
-            return value == ((ImmutableShort) other).getValue();
-        else if (other instanceof Short)
-            return ((Short) other).shortValue() == value;
-        else
-            return false;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Short.hashCode(value);
-    }
-
-    @Override
-    public final int compareTo(final MutableShort other) {
-        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
-    }
-
-    public final int compareTo(final ImmutableShort other) {
-        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
-    }
-
-    // Others
-
-    @Override
-    public final int intValue() {
-        return (int) value;
-    }
-
-    @Override
-    public final long longValue() {
-        return (long) value;
-    }
-
-    @Override
-    public final float floatValue() {
-        return (float) value;
-    }
-
-    @Override
-    public final double doubleValue() {
-        return (double) value;
+    public final S getUnderlyingArray() {
+        return data;
     }
 }

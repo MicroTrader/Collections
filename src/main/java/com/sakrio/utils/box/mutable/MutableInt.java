@@ -112,7 +112,8 @@ import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableInt;
 import sun.misc.Unsafe;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Wrapper class
@@ -136,16 +137,12 @@ public final class MutableInt extends Number
         value = i;
     }
 
-    public final static int pack(final int from, final int to, final String values, final String charsetName) {
-        try {
-            return pack(from, to, values.getBytes(charsetName));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Charset not supported", e);
-        }
+    public final static int pack(final int from, final int to, final String values, final Charset charset) {
+        return pack(from, to, values.getBytes(charset));
     }
 
     public final static int pack(final int from, final int to, final String values) {
-        return pack(from, to, values, "UTF8");
+        return pack(from, to, values, StandardCharsets.ISO_8859_1);
     }
 
     public final static int pack(final int from, final int to, final byte... values) {

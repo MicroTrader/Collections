@@ -103,153 +103,30 @@
  * _______________________________________________________________________________
  */
 
+package com.sakrio.collections.objectlayout;
 
-package com.sakrio.utils.box.mutable;
-
-import com.sakrio.utils.UnsafeAccess;
-import com.sakrio.utils.box.BoxOnce;
-import com.sakrio.utils.box.immutable.ImmutableShort;
-import sun.misc.Unsafe;
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import com.sakrio.collections.objectlayout.arrays.IntrinsicHelpers;
+import org.ObjectLayout.CtorAndArgs;
 
 /**
- * Wrapper class
- *
- * @author sirinath
+ * Created by sirinath on 03/09/2016.
  */
-@SuppressWarnings("serial")
-public final class MutableShort extends Number
-        implements BoxOnce<MutableShort> {
-    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableShort.class, "value");
-    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
-    /**
-     * Value
-     */
-    private short value;
+public final class ObjectSupplier<U> extends BaseSupplier<U> {
+    private final CtorAndArgs<U> ctorAndArgs;
 
-    /**
-     * @param i Parameter
-     */
-    public MutableShort(final short i) {
-        value = i;
+    public ObjectSupplier(final CtorAndArgs<U> ctorAndArgs) {
+        this.ctorAndArgs = ctorAndArgs;
     }
 
-    public final static short pack(final int from, final int to, final String values, final Charset charset) {
-        return pack(from, to, values.getBytes(charset));
-    }
-
-    public final static short pack(final int from, final int to, final String values) {
-        return pack(from, to, values, StandardCharsets.ISO_8859_1);
-    }
-
-    public final static short pack(final int from, final int to, final byte... values) {
-        short value = 0;
-
-        final int last = Math.min(values.length, to);
-        final int remainder = Math.max(last - from, 0);
-
-        switch (remainder) {
-            default:
-            case 2:
-                value += values[from + 1] << Byte.SIZE;
-            case 1:
-                value += values[from];
-            case 0:
-        }
-
-        return value;
-    }
-
-    public final static void unpack(final int from, final int to, final byte[] result, final short value) {
-        final int last = Math.min(result.length, to);
-        final int remainder = Math.max(last - from, 0);
-
-        switch (remainder) {
-            default:
-            case 2:
-                result[from + 1] = (byte) ((value & 0xFF00) >> Byte.SIZE);
-            case 1:
-                result[from] = (byte) (value & 0x00FF);
-            case 0:
-        }
+    public ObjectSupplier() {
+        this.ctorAndArgs = null;
     }
 
     @Override
-    public final String toString() {
-        return String.valueOf(value);
-    }
-
-    public final short getValue() {
-        return value;
-    }
-
-    public final void setValue(final short value) {
-        this.value = value;
-    }
-
-    public final short get() {
-        return value;
-    }
-
-    public final short getValueVolatile() {
-        return UNSAFE.getShortVolatile(this, valueFieldOffset);
-    }
-
-    public final void setValueVolatile(final short value) {
-        UNSAFE.putShortVolatile(this, valueFieldOffset, value);
-    }
-
-    public final void set(final short value) {
-        this.value = value;
-    }
-
-    @Override
-    public final boolean equals(Object other) {
-        if (other instanceof MutableShort)
-            return value == ((MutableShort) other).getValue();
-        else if (other instanceof ImmutableShort)
-            return value == ((ImmutableShort) other).getValue();
-        else if (other instanceof Short)
-            return ((Short) other).shortValue() == value;
+    public final U apply(final String field, final Object containingObject) {
+        if (ctorAndArgs == null)
+            return IntrinsicHelpers.constructWithin(field, containingObject);
         else
-            return false;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Short.hashCode(value);
-    }
-
-    @Override
-    public final int compareTo(final MutableShort other) {
-        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
-    }
-
-    public final int compareTo(final ImmutableShort other) {
-        return value == other.getValue() ? 0 : (value < other.getValue() ? -1 : 1);
-    }
-
-    // Others
-
-    @Override
-    public final int intValue() {
-        return (int) value;
-    }
-
-    @Override
-    public final long longValue() {
-        return (long) value;
-    }
-
-    @Override
-    public final float floatValue() {
-        return (float) value;
-    }
-
-    @Override
-    public final double doubleValue() {
-        return (double) value;
+            return IntrinsicHelpers.constructWithin(field, containingObject, ctorAndArgs);
     }
 }
