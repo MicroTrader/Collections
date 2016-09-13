@@ -103,25 +103,24 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections.objectlayout.arrays.templates;
+package com.sakrio.array;
+
+import com.sakrio.utils.UnsafeAccess;
+import sun.misc.Unsafe;
 
 /**
- * Created by sirinath on 07/09/2016.
+ * Created by sirinath on 11/09/2016.
  */
-public interface DoubleCircularArrayCartridge<S> extends DoubleArrayCartridge<S>, CircularArrayProxy {
-    default void add(final double value) {
-        final long next = nextSlot();
-        set(next, value);
-    }
+public class Array {
+    private static Unsafe UNSAFE = UnsafeAccess.UNSAFE;
 
-    default double at(final long index) {
-        long theMarker = getMarker();
-        double theValue = get(roll(theMarker - index));
+    private final long[] lengths;
 
-        while (theMarker != (theMarker = getMarkerVolatile())) {
-            theValue = get(roll(theMarker - index));
-        }
+    //private final Object array;
 
-        return theValue;
+    public Array(final long[] lengths) {
+        this.lengths = lengths;
+
+        UNSAFE.
     }
 }

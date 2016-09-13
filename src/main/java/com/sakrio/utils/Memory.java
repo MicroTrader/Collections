@@ -103,27 +103,167 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.collections.objectlayout.arrays;
+package com.sakrio.utils;
 
-import com.sakrio.collections.objectlayout.arrays.templates.AbstractGenericArrayCartridge;
-import com.sakrio.collections.objectlayout.arrays.templates.IntArrayCartridge;
-import org.ObjectLayout.PrimitiveIntArray;
+import sun.misc.Cleaner;
+import sun.misc.Unsafe;
+
+import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
+import java.util.function.LongConsumer;
+
+class MemoryFieldAddress {
+    protected static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+
+    private long address;
+
+    public final long getAddress() {
+        return address;
+    }
+
+    protected final void setAddress(final long address) {
+        this.address = address;
+    }
+}
+
+class MemoryAddressPad1 extends MemoryFieldAddress {
+    long p1_1, p1_2, p1_3, p1_4, p1_5, p1_6, p1_7, p1_8, p1_9, p1_10, p1_11, p1_12, p1_13, p1_14, p1_15, p1_16, p1_17;
+}
+
+class MemoryFieldBytes extends MemoryAddressPad1 {
+    private long bytes;
+
+    public final long getBytes() {
+        return bytes;
+    }
+
+    protected final void setBytes(final long bytes) {
+        this.bytes = bytes;
+    }
+}
+
+class MemoryAddressPad2 extends MemoryFieldBytes {
+    long p2_1, p2_2, p2_3, p2_4, p2_5, p2_6, p2_7, p2_8, p2_9, p2_10, p2_11, p2_12, p2_13, p2_14, p2_15, p2_16, p2_17;
+}
+
+class MemoryFieldArray extends MemoryAddressPad2 {
+    private Object array;
+
+    public final Object getArray() {
+        return array;
+    }
+
+    protected final void setArray(final Object array) {
+        this.array = array;
+    }
+
+    public final boolean hasArray() {
+        return array != null;
+    }
+}
+
+class MemoryAddressPad3 extends MemoryFieldArray {
+    long p3_1, p3_2, p3_3, p3_4, p3_5, p3_6, p3_7, p3_8, p3_9, p3_10, p3_11, p3_12, p3_13, p3_14, p3_15, p3_16, p3_17;
+}
 
 /**
- * Created by sirinath on 06/09/2016.
+ * Created by sirinath on 13/09/2016.
  */
-public class IntArray extends AbstractGenericArrayCartridge<PrimitiveIntArray> implements IntArrayCartridge<PrimitiveIntArray> {
-    public IntArray(final long length) {
-        super(new PrimitiveArraySupplier<>(IntrinsicHelpers.primitiveArrayBuilder(PrimitiveIntArray.class, length)));
+public class Memory extends MemoryAddressPad3 {
+    private final LongConsumer reallocate;
+
+    private CleaningProcess cleaner;
+
+    public Memory(final long bytes) {
+        this.setBytes(bytes);
+        this.setAddress(UNSAFE.allocateMemory(bytes));
+        reallocate = (final long newLengthInBytes) -> {
+            cleaner.invalidate();
+            final long address = UNSAFE.reallocateMemory(this.getAddress(), newLengthInBytes);
+            this.setAddress(address);
+            this.cleaner = new CleaningProcess(this.getAddress());
+            Cleaner.create(this, this.cleaner);
+        };
+        this.cleaner = new CleaningProcess(this.getAddress());
+        Cleaner.create(this, this.cleaner);
     }
 
-    @Override
-    public int get(final long index) {
-        return getUnderlyingArray().get(index);
+    private Memory(final Object array, final long address, final long bytes) {
+        this.setArray(array);
+        this.setAddress(address);
+        this.setBytes(bytes);
+        reallocate = (final long newLengthInBytes) -> {
+            final Object currentArray = this.getArray();
+            final Object newArray = Array.newInstance(currentArray.getClass(), (int) newLengthInBytes);
+            this.setArray(newArray);
+            System.arraycopy(currentArray, 0, newArray, 0, Array.getLength(currentArray));
+        };
     }
 
-    @Override
-    public void set(final long index, final int value) {
-        getUnderlyingArray().set(index, value);
+    public Memory(final boolean[] array) {
+        this(array, Unsafe.ARRAY_BOOLEAN_BASE_OFFSET, array.length * Unsafe.ARRAY_BOOLEAN_INDEX_SCALE);
+    }
+
+    public Memory(final char[] array) {
+        this(array, Unsafe.ARRAY_CHAR_BASE_OFFSET, array.length * Unsafe.ARRAY_CHAR_INDEX_SCALE);
+    }
+
+    public Memory(final byte[] array) {
+        this(array, Unsafe.ARRAY_BYTE_BASE_OFFSET, array.length * Unsafe.ARRAY_BYTE_INDEX_SCALE);
+    }
+
+    public Memory(final short[] array) {
+        this(array, Unsafe.ARRAY_SHORT_BASE_OFFSET, array.length * Unsafe.ARRAY_SHORT_INDEX_SCALE);
+    }
+
+    public Memory(final int[] array) {
+        this(array, Unsafe.ARRAY_INT_BASE_OFFSET, array.length * Unsafe.ARRAY_INT_INDEX_SCALE);
+    }
+
+    public Memory(final long[] array) {
+        this(array, Unsafe.ARRAY_LONG_BASE_OFFSET, array.length * Unsafe.ARRAY_LONG_INDEX_SCALE);
+    }
+
+    public Memory(final float[] array) {
+        this(array, Unsafe.ARRAY_FLOAT_BASE_OFFSET, array.length * Unsafe.ARRAY_FLOAT_INDEX_SCALE);
+    }
+
+    public Memory(final double[] array) {
+        this(array, Unsafe.ARRAY_DOUBLE_BASE_OFFSET, array.length * Unsafe.ARRAY_DOUBLE_INDEX_SCALE);
+    }
+
+    public <T> Memory(final T[] array) {
+        this(array, Unsafe.ARRAY_OBJECT_BASE_OFFSET, array.length * Unsafe.ARRAY_OBJECT_INDEX_SCALE);
+    }
+
+    public static long address(final ByteBuffer buffer) {
+        if (buffer.isDirect())
+            return ((sun.nio.ch.DirectBuffer) buffer).address();
+        else
+            return Unsafe.ARRAY_BYTE_BASE_OFFSET;
+    }
+
+    public synchronized void reallocate(final long newLengthInBytes) {
+        reallocate.accept(newLengthInBytes);
+    }
+
+    private static class CleaningProcess implements Runnable {
+        private final long address;
+
+        private boolean valid = true;
+
+        CleaningProcess(final long address) {
+            this.address = address;
+        }
+
+        @Override
+        public synchronized void run() {
+            if (valid)
+                UNSAFE.freeMemory(this.address);
+        }
+
+        public void invalidate() {
+            this.valid = false;
+        }
     }
 }
