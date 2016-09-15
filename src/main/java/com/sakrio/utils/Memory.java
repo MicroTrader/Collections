@@ -107,10 +107,14 @@ package com.sakrio.utils;
 
 import sun.misc.Cleaner;
 import sun.misc.Unsafe;
+import sun.nio.ch.DirectBuffer;
 
 import java.lang.reflect.Array;
-import java.nio.ByteBuffer;
+import java.nio.*;
+import java.nio.channels.FileChannel;
 import java.util.function.LongConsumer;
+
+import static java.nio.ByteBuffer.allocateDirect;
 
 class MemoryFieldAddress {
     protected static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
@@ -146,7 +150,27 @@ class MemoryAddressPad2 extends MemoryFieldBytes {
     long p2_1, p2_2, p2_3, p2_4, p2_5, p2_6, p2_7, p2_8, p2_9, p2_10, p2_11, p2_12, p2_13, p2_14, p2_15, p2_16, p2_17;
 }
 
-class MemoryFieldArray extends MemoryAddressPad2 {
+class MemoryFieldBuffer extends MemoryAddressPad2 {
+    private Buffer buffer;
+
+    public final Buffer getBuffer() {
+        return buffer;
+    }
+
+    protected final void setBuffer(final Buffer buffer) {
+        this.buffer = buffer;
+    }
+
+    public final boolean bufferBased() {
+        return buffer != null;
+    }
+}
+
+class MemoryAddressPad3 extends MemoryFieldBuffer {
+    long p3_1, p3_2, p3_3, p3_4, p3_5, p3_6, p3_7, p3_8, p3_9, p3_10, p3_11, p3_12, p3_13, p3_14, p3_15, p3_16, p3_17;
+}
+
+class MemoryFieldArray extends MemoryAddressPad3 {
     private Object array;
 
     public final Object getArray() {
@@ -157,32 +181,298 @@ class MemoryFieldArray extends MemoryAddressPad2 {
         this.array = array;
     }
 
-    public final boolean hasArray() {
+    public final boolean arrayBased() {
         return array != null;
     }
 }
 
-class MemoryAddressPad3 extends MemoryFieldArray {
-    long p3_1, p3_2, p3_3, p3_4, p3_5, p3_6, p3_7, p3_8, p3_9, p3_10, p3_11, p3_12, p3_13, p3_14, p3_15, p3_16, p3_17;
+class MemoryAddressPad4 extends MemoryFieldArray {
+    long p4_1, p4_2, p4_3, p4_4, p4_5, p4_6, p4_7, p4_8, p4_9, p4_10, p4_11, p4_12, p4_13, p4_14, p4_15, p4_16, p4_17;
 }
 
 /**
  * Created by sirinath on 13/09/2016.
  */
-public class Memory extends MemoryAddressPad3 {
-    private final LongConsumer reallocate;
+public class Memory extends MemoryAddressPad4 implements AutoCloseable {
+    private final LongConsumer reAllocator;
 
-    private CleaningProcess cleaner;
+    private final CleaningProcess cleaner;
+
+    public Memory(final FileChannel channel, final long bytes) {
+        try {
+            MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bytes);
+            this.setBytes(buffer.capacity());
+            this.setAddress(((DirectBuffer) buffer).address());
+            this.setBuffer(buffer);
+        } catch (Throwable t) {
+            throw new RuntimeException("Exception turing file mapping", t);
+        }
+        reAllocator = (final long newLengthInBytes) -> {
+            try {
+                MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, newLengthInBytes);
+                this.setBytes(buffer.capacity());
+                this.setAddress(((DirectBuffer) buffer).address());
+                this.setBuffer(buffer);
+            } catch (Throwable t) {
+                throw new RuntimeException("Exception turing file mapping", t);
+            }
+        };
+        cleaner = null;
+    }
+
+    public Memory(final ByteBuffer buffer) {
+        this.setBuffer(buffer);
+
+        if (buffer.hasArray()) {
+            this.setAddress(Unsafe.ARRAY_BYTE_BASE_OFFSET);
+            this.setArray(buffer.array());
+        } else if (buffer.isDirect())
+            this.setAddress(((DirectBuffer) buffer).address());
+        else
+            throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+        this.setBytes(buffer.capacity() * Byte.BYTES);
+
+        reAllocator = (final long newLengthInBytes) -> {
+            final ByteBuffer newBuffer;
+
+            if (buffer.hasArray()) {
+                newBuffer = ByteBuffer.allocate((int) newLengthInBytes);
+                this.setArray(newBuffer.array());
+                this.setBytes(newBuffer.capacity() * Byte.BYTES);
+                newBuffer.put(buffer);
+            } else if (buffer.isDirect()) {
+                newBuffer = allocateDirect((int) newLengthInBytes * Byte.BYTES);
+                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setBytes(newBuffer.capacity() * Byte.BYTES);
+                newBuffer.put(buffer);
+            } else
+                throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+            this.setBuffer(newBuffer);
+            this.setBytes(newBuffer.capacity() * Byte.BYTES);
+        };
+        cleaner = null;
+    }
+
+    public Memory(final CharBuffer buffer) {
+        this.setBuffer(buffer);
+
+        if (buffer.hasArray()) {
+            this.setAddress(Unsafe.ARRAY_CHAR_BASE_OFFSET);
+            this.setArray(buffer.array());
+        } else if (buffer.isDirect())
+            this.setAddress(((DirectBuffer) buffer).address());
+        else
+            throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+        this.setBytes(buffer.capacity() * Character.BYTES);
+
+        reAllocator = (final long newLengthInBytes) -> {
+            final CharBuffer newBuffer;
+
+            if (buffer.hasArray()) {
+                newBuffer = CharBuffer.allocate((int) newLengthInBytes);
+                this.setArray(newBuffer.array());
+                this.setBytes(newBuffer.capacity() * Character.BYTES);
+                newBuffer.put(buffer);
+            } else if (buffer.isDirect()) {
+                newBuffer = ByteBuffer.allocateDirect((int) newLengthInBytes * Character.BYTES).asCharBuffer();
+                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setBytes(newBuffer.capacity() * Character.BYTES);
+                newBuffer.put(buffer);
+            } else
+                throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+            this.setBuffer(newBuffer);
+            this.setBytes(newBuffer.capacity() * Character.BYTES);
+        };
+        cleaner = null;
+    }
+
+    public Memory(final DoubleBuffer buffer) {
+        this.setBuffer(buffer);
+
+        if (buffer.hasArray()) {
+            this.setAddress(Unsafe.ARRAY_DOUBLE_BASE_OFFSET);
+            this.setArray(buffer.array());
+        } else if (buffer.isDirect())
+            this.setAddress(((DirectBuffer) buffer).address());
+        else
+            throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+        this.setBytes(buffer.capacity() * Double.BYTES);
+
+        reAllocator = (final long newLengthInBytes) -> {
+            final DoubleBuffer newBuffer;
+
+            if (buffer.hasArray()) {
+                newBuffer = DoubleBuffer.allocate((int) newLengthInBytes);
+                this.setArray(newBuffer.array());
+                this.setBytes(newBuffer.capacity() * Double.BYTES);
+                newBuffer.put(buffer);
+            } else if (buffer.isDirect()) {
+                newBuffer = ByteBuffer.allocateDirect((int) newLengthInBytes * Double.BYTES).asDoubleBuffer();
+                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setBytes(newBuffer.capacity() * Double.BYTES);
+                newBuffer.put(buffer);
+            } else
+                throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+            this.setBuffer(newBuffer);
+            this.setBytes(newBuffer.capacity() * Double.BYTES);
+        };
+        cleaner = null;
+    }
+
+    public Memory(final LongBuffer buffer) {
+        this.setBuffer(buffer);
+
+        if (buffer.hasArray()) {
+            this.setAddress(Unsafe.ARRAY_LONG_BASE_OFFSET);
+            this.setArray(buffer.array());
+        } else if (buffer.isDirect())
+            this.setAddress(((DirectBuffer) buffer).address());
+        else
+            throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+        this.setBytes(buffer.capacity() * Long.BYTES);
+
+        reAllocator = (final long newLengthInBytes) -> {
+            final LongBuffer newBuffer;
+
+            if (buffer.hasArray()) {
+                newBuffer = LongBuffer.allocate((int) newLengthInBytes);
+                this.setArray(newBuffer.array());
+                this.setBytes(newBuffer.capacity() * Long.BYTES);
+                newBuffer.put(buffer);
+            } else if (buffer.isDirect()) {
+                newBuffer = ByteBuffer.allocateDirect((int) newLengthInBytes * Long.BYTES).asLongBuffer();
+                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setBytes(newBuffer.capacity() * Long.BYTES);
+                newBuffer.put(buffer);
+            } else
+                throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+            this.setBuffer(newBuffer);
+            this.setBytes(newBuffer.capacity() * Long.BYTES);
+        };
+        cleaner = null;
+    }
+
+    public Memory(final FloatBuffer buffer) {
+        this.setBuffer(buffer);
+
+        if (buffer.hasArray()) {
+            this.setAddress(Unsafe.ARRAY_FLOAT_BASE_OFFSET);
+            this.setArray(buffer.array());
+        } else if (buffer.isDirect())
+            this.setAddress(((DirectBuffer) buffer).address());
+        else
+            throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+        this.setBytes(buffer.capacity() * Float.BYTES);
+
+        reAllocator = (final long newLengthInBytes) -> {
+            final FloatBuffer newBuffer;
+
+            if (buffer.hasArray()) {
+                newBuffer = FloatBuffer.allocate((int) newLengthInBytes);
+                this.setArray(newBuffer.array());
+                this.setBytes(newBuffer.capacity() * Float.BYTES);
+                newBuffer.put(buffer);
+            } else if (buffer.isDirect()) {
+                newBuffer = ByteBuffer.allocateDirect((int) newLengthInBytes * Float.BYTES).asFloatBuffer();
+                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setBytes(newBuffer.capacity() * Float.BYTES);
+                newBuffer.put(buffer);
+            } else
+                throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+            this.setBuffer(newBuffer);
+            this.setBytes(newBuffer.capacity() * Float.BYTES);
+        };
+        cleaner = null;
+    }
+
+    public Memory(final IntBuffer buffer) {
+        this.setBuffer(buffer);
+
+        if (buffer.hasArray()) {
+            this.setAddress(Unsafe.ARRAY_INT_BASE_OFFSET);
+            this.setArray(buffer.array());
+        } else if (buffer.isDirect())
+            this.setAddress(((DirectBuffer) buffer).address());
+        else
+            throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+        this.setBytes(buffer.capacity() * Integer.BYTES);
+
+        reAllocator = (final long newLengthInBytes) -> {
+            final IntBuffer newBuffer;
+
+            if (buffer.hasArray()) {
+                newBuffer = IntBuffer.allocate((int) newLengthInBytes);
+                this.setArray(newBuffer.array());
+                this.setBytes(newBuffer.capacity() * Integer.BYTES);
+                newBuffer.put(buffer);
+            } else if (buffer.isDirect()) {
+                newBuffer = ByteBuffer.allocateDirect((int) newLengthInBytes * Integer.BYTES).asIntBuffer();
+                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setBytes(newBuffer.capacity() * Integer.BYTES);
+                newBuffer.put(buffer);
+            } else
+                throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+            this.setBuffer(newBuffer);
+            this.setBytes(newBuffer.capacity() * Integer.BYTES);
+        };
+        cleaner = null;
+    }
+
+    public Memory(final ShortBuffer buffer) {
+        this.setBuffer(buffer);
+
+        if (buffer.hasArray()) {
+            this.setAddress(Unsafe.ARRAY_SHORT_BASE_OFFSET);
+            this.setArray(buffer.array());
+        } else if (buffer.isDirect())
+            this.setAddress(((DirectBuffer) buffer).address());
+        else
+            throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+        this.setBytes(buffer.capacity() * Short.BYTES);
+
+        reAllocator = (final long newLengthInBytes) -> {
+            final ShortBuffer newBuffer;
+
+            if (buffer.hasArray()) {
+                newBuffer = ShortBuffer.allocate((int) newLengthInBytes);
+                this.setArray(newBuffer.array());
+                this.setBytes(newBuffer.capacity() * Short.BYTES);
+                newBuffer.put(buffer);
+            } else if (buffer.isDirect()) {
+                newBuffer = ByteBuffer.allocateDirect((int) newLengthInBytes * Short.BYTES).asShortBuffer();
+                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setBytes(newBuffer.capacity() * Short.BYTES);
+                newBuffer.put(buffer);
+            } else
+                throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
+
+            this.setBuffer(newBuffer);
+            this.setBytes(newBuffer.capacity() * Short.BYTES);
+        };
+        cleaner = null;
+    }
 
     public Memory(final long bytes) {
         this.setBytes(bytes);
         this.setAddress(UNSAFE.allocateMemory(bytes));
-        reallocate = (final long newLengthInBytes) -> {
-            cleaner.invalidate();
+        reAllocator = (final long newLengthInBytes) -> {
             final long address = UNSAFE.reallocateMemory(this.getAddress(), newLengthInBytes);
+            this.getCleaner().setAddress(address);
             this.setAddress(address);
-            this.cleaner = new CleaningProcess(this.getAddress());
-            Cleaner.create(this, this.cleaner);
+            this.setBytes(newLengthInBytes);
         };
         this.cleaner = new CleaningProcess(this.getAddress());
         Cleaner.create(this, this.cleaner);
@@ -192,12 +482,15 @@ public class Memory extends MemoryAddressPad3 {
         this.setArray(array);
         this.setAddress(address);
         this.setBytes(bytes);
-        reallocate = (final long newLengthInBytes) -> {
+        reAllocator = (final long newLengthInBytes) -> {
             final Object currentArray = this.getArray();
-            final Object newArray = Array.newInstance(currentArray.getClass(), (int) newLengthInBytes);
+            final Class arrayClass = currentArray.getClass();
+            final Object newArray = Array.newInstance(arrayClass, (int) newLengthInBytes);
             this.setArray(newArray);
+            this.setBytes(UNSAFE.arrayIndexScale(arrayClass) * newLengthInBytes);
             System.arraycopy(currentArray, 0, newArray, 0, Array.getLength(currentArray));
         };
+        cleaner = null;
     }
 
     public Memory(final boolean[] array) {
@@ -236,34 +529,51 @@ public class Memory extends MemoryAddressPad3 {
         this(array, Unsafe.ARRAY_OBJECT_BASE_OFFSET, array.length * Unsafe.ARRAY_OBJECT_INDEX_SCALE);
     }
 
-    public static long address(final ByteBuffer buffer) {
-        if (buffer.isDirect())
-            return ((sun.nio.ch.DirectBuffer) buffer).address();
-        else
-            return Unsafe.ARRAY_BYTE_BASE_OFFSET;
+    /**
+     * Re allocation causes locking and garbage. Use sparingly.
+     *
+     * @param newLengthInBytes new length
+     */
+    public final synchronized void reallocate(final long newLengthInBytes) {
+        reAllocator.accept(newLengthInBytes);
     }
 
-    public synchronized void reallocate(final long newLengthInBytes) {
-        reallocate.accept(newLengthInBytes);
+    protected final CleaningProcess getCleaner() {
+        return cleaner;
     }
 
-    private static class CleaningProcess implements Runnable {
-        private final long address;
+    @Override
+    public void close() throws Exception {
+        if (cleaner != null)
+            cleaner.close();
+    }
 
-        private boolean valid = true;
+    private static final class CleaningProcess implements Runnable, AutoCloseable {
+        private long address;
 
         CleaningProcess(final long address) {
             this.address = address;
         }
 
         @Override
-        public synchronized void run() {
-            if (valid)
+        public final synchronized void run() {
+            if (this.address != 0)
                 UNSAFE.freeMemory(this.address);
+
+            this.address = 0;
         }
 
-        public void invalidate() {
-            this.valid = false;
+        final long getAddress() {
+            return address;
+        }
+
+        final void setAddress(final long address) {
+            this.address = address;
+        }
+
+        @Override
+        public final void close() throws Exception {
+            run();
         }
     }
 }
