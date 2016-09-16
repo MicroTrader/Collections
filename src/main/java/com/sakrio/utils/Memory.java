@@ -114,6 +114,7 @@ import java.nio.*;
 import java.nio.channels.FileChannel;
 import java.util.function.LongConsumer;
 
+import static com.sakrio.utils.UnsafeUtils.*;
 import static java.nio.ByteBuffer.allocateDirect;
 
 class MemoryFieldAddress {
@@ -465,9 +466,9 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
 
     public Memory(final long bytes) {
         this.setBytes(bytes);
-        this.setAddress(UNSAFE.allocateMemory(bytes));
+        this.setAddress(allocateMemory(bytes));
         reAllocator = (final long newLengthInBytes) -> {
-            final long address = UNSAFE.reallocateMemory(this.getAddress(), newLengthInBytes);
+            final long address = reallocateMemory(this.getAddress(), newLengthInBytes);
             this.getCleaner().setAddress(address);
             this.setAddress(address);
             this.setBytes(newLengthInBytes);
@@ -485,7 +486,7 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
             final Class arrayClass = currentArray.getClass();
             final Object newArray = Array.newInstance(arrayClass, (int) newLengthInBytes);
             this.setArray(newArray);
-            this.setBytes(UNSAFE.arrayIndexScale(arrayClass) * newLengthInBytes);
+            this.setBytes(arrayIndexScale(arrayClass) * newLengthInBytes);
             System.arraycopy(currentArray, 0, newArray, 0, Array.getLength(currentArray));
         };
         cleaner = null;
@@ -556,7 +557,7 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
         @Override
         public final synchronized void run() {
             if (this.address != 0)
-                UNSAFE.freeMemory(this.address);
+                freeMemory(this.address);
 
             this.address = 0;
         }

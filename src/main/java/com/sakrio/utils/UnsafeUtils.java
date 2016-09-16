@@ -181,15 +181,27 @@ public class UnsafeUtils {
     }
 
     public static long allocate(long bytes) {
-        return UNSAFE.allocateMemory(bytes);
+        return allocateMemory(bytes);
     }
 
     public static long allocate(long address, long bytes) {
         return reallocate(address, bytes);
     }
 
+    public static long allocateMemory(long bytes) {
+        return UNSAFE.allocateMemory(bytes);
+    }
+
     public static long reallocate(long address, long bytes) {
+        return reallocateMemory(address, bytes);
+    }
+
+    public static long reallocateMemory(long address, long bytes) {
         return UNSAFE.reallocateMemory(address, bytes);
+    }
+
+    public static void freeMemory(long address) {
+        free(address);
     }
 
     public static void deallocate(long address) {
