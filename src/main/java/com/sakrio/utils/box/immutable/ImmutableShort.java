@@ -110,8 +110,6 @@ import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.mutable.MutableShort;
 
-import static com.sakrio.utils.UnsafeUtils.getShortVolatile;
-
 /**
  * Wrapper class
  *
@@ -144,10 +142,6 @@ public final class ImmutableShort extends Number
 
     public final short get() {
         return value;
-    }
-
-    public final short getValueVolatile() {
-        return getShortVolatile(this, valueFieldOffset);
     }
 
     @Override

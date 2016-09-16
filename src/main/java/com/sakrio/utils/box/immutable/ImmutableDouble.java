@@ -111,8 +111,6 @@ import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.mutable.MutableDouble;
 
-import static com.sakrio.utils.UnsafeUtils.getDoubleVolatile;
-
 /**
  * Wrapper class
  *
@@ -145,10 +143,6 @@ public final class ImmutableDouble extends Number
 
     public final double get() {
         return value;
-    }
-
-    public final double getValueVolatile() {
-        return getDoubleVolatile(this, valueFieldOffset);
     }
 
     @Override

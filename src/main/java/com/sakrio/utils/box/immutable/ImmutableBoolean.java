@@ -110,8 +110,6 @@ import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.mutable.MutableBoolean;
 
-import static com.sakrio.utils.UnsafeUtils.getBooleanVolatile;
-
 /**
  * Wrapper class
  *
@@ -144,10 +142,6 @@ public final class ImmutableBoolean extends Number
 
     public final boolean get() {
         return value;
-    }
-
-    public final boolean getValueVolatile() {
-        return getBooleanVolatile(this, valueFieldOffset);
     }
 
     @Override

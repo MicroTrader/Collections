@@ -110,7 +110,8 @@ package com.sakrio.utils.box.mutable;
 import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableDouble;
-import sun.misc.Unsafe;
+
+import static com.sakrio.utils.UnsafeUtils.*;
 
 /**
  * Wrapper class
@@ -121,7 +122,6 @@ import sun.misc.Unsafe;
 public final class MutableDouble extends Number
         implements BoxOnce<MutableDouble> {
     protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(MutableDouble.class, "value");
-    private static final Unsafe UNSAFE = UnsafeUtils.UNSAFE;
     /**
      * Value
      */
@@ -152,11 +152,11 @@ public final class MutableDouble extends Number
     }
 
     public final double getValueVolatile() {
-        return UNSAFE.getDoubleVolatile(this, valueFieldOffset);
+        return getDoubleVolatile(this, valueFieldOffset);
     }
 
     public final void setValueVolatile(final double value) {
-        UNSAFE.putDoubleVolatile(this, valueFieldOffset, value);
+        putDoubleVolatile(this, valueFieldOffset, value);
     }
 
     public final void set(final double value) {
@@ -165,21 +165,21 @@ public final class MutableDouble extends Number
 
     public final void setValueOrdered(
             final double value) {
-        UNSAFE.putOrderedLong(this, valueFieldOffset, Double.doubleToRawLongBits(value));
+        putOrderedDouble(this, valueFieldOffset, value);
     }
 
     public final boolean compareAndSwapValue(final double expected,
                                              final double value) {
-        return UNSAFE.compareAndSwapLong(this,
+        return compareAndSwapLong(this,
                 valueFieldOffset,
                 Double.doubleToRawLongBits(expected), Double.doubleToRawLongBits(value));
     }
 
     public final double getAndSetValue(
             final double value) {
-        return Double.longBitsToDouble(UNSAFE.getAndSetLong(this,
+        return getAndSetDouble(this,
                 valueFieldOffset,
-                Double.doubleToRawLongBits(value)));
+                value);
     }
 
     @Override

@@ -110,8 +110,6 @@ import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.mutable.MutableInt;
 
-import static com.sakrio.utils.UnsafeUtils.getIntVolatile;
-
 /**
  * Wrapper class
  *
@@ -144,10 +142,6 @@ public final class ImmutableInt extends Number
 
     public final int get() {
         return value;
-    }
-
-    public final int getValueVolatile() {
-        return getIntVolatile(this, valueFieldOffset);
     }
 
     @Override

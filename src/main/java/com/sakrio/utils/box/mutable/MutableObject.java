@@ -109,7 +109,8 @@ package com.sakrio.utils.box.mutable;
 import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableObject;
-import sun.misc.Unsafe;
+
+import static com.sakrio.utils.UnsafeUtils.*;
 
 /**
  * Wrapper class
@@ -120,7 +121,6 @@ import sun.misc.Unsafe;
 public final class MutableObject<T>
         implements BoxOnce<MutableObject<T>> {
     protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(MutableObject.class, "value");
-    private static final Unsafe UNSAFE = UnsafeUtils.UNSAFE;
     /**
      * Value
      */
@@ -151,11 +151,11 @@ public final class MutableObject<T>
     }
 
     public final T getValueVolatile() {
-        return (T) UNSAFE.getObjectVolatile(this, valueFieldOffset);
+        return (T) getObjectVolatile(this, valueFieldOffset);
     }
 
     public final void setValueVolatile(final T value) {
-        UNSAFE.putObjectVolatile(this, valueFieldOffset, value);
+        putObjectVolatile(this, valueFieldOffset, value);
     }
 
     public final void set(final T value) {
@@ -164,19 +164,19 @@ public final class MutableObject<T>
 
     public final void setValueOrdered(
             final T value) {
-        UNSAFE.putOrderedObject(this, valueFieldOffset, (value));
+        putOrderedObject(this, valueFieldOffset, (value));
     }
 
     public final boolean compareAndSwapValue(final T expected,
                                              final T value) {
-        return UNSAFE.compareAndSwapObject(this,
+        return compareAndSwapObject(this,
                 valueFieldOffset,
                 (expected), (value));
     }
 
     public final T getAndSetValue(
             final T value) {
-        return (T) (UNSAFE.getAndSetObject(this,
+        return (T) (getAndSetObject(this,
                 valueFieldOffset,
                 value));
     }

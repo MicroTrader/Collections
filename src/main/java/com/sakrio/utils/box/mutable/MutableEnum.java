@@ -110,7 +110,9 @@ package com.sakrio.utils.box.mutable;
 import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableEnum;
-import sun.misc.Unsafe;
+
+import static com.sakrio.utils.UnsafeUtils.getObjectVolatile;
+import static com.sakrio.utils.UnsafeUtils.putObjectVolatile;
 
 /**
  * Wrapper class
@@ -121,7 +123,6 @@ import sun.misc.Unsafe;
 public final class MutableEnum<T extends Enum<T>> extends Number
         implements BoxOnce<MutableEnum<T>> {
     protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(MutableEnum.class, "value");
-    private static final Unsafe UNSAFE = UnsafeUtils.UNSAFE;
     /**
      * Value
      */
@@ -152,11 +153,11 @@ public final class MutableEnum<T extends Enum<T>> extends Number
     }
 
     public final Enum getValueVolatile() {
-        return (Enum) UNSAFE.getObjectVolatile(this, valueFieldOffset);
+        return (Enum) getObjectVolatile(this, valueFieldOffset);
     }
 
     public final void setValueVolatile(final Enum value) {
-        UNSAFE.putObjectVolatile(this, valueFieldOffset, value);
+        putObjectVolatile(this, valueFieldOffset, value);
     }
 
     public final void set(final Enum value) {

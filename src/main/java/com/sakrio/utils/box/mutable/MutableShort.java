@@ -109,10 +109,12 @@ package com.sakrio.utils.box.mutable;
 import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableShort;
-import sun.misc.Unsafe;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+
+import static com.sakrio.utils.UnsafeUtils.getShortVolatile;
+import static com.sakrio.utils.UnsafeUtils.putShortVolatile;
 
 /**
  * Wrapper class
@@ -123,7 +125,6 @@ import java.nio.charset.StandardCharsets;
 public final class MutableShort extends Number
         implements BoxOnce<MutableShort> {
     protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(MutableShort.class, "value");
-    private static final Unsafe UNSAFE = UnsafeUtils.UNSAFE;
     /**
      * Value
      */
@@ -194,11 +195,11 @@ public final class MutableShort extends Number
     }
 
     public final short getValueVolatile() {
-        return UNSAFE.getShortVolatile(this, valueFieldOffset);
+        return getShortVolatile(this, valueFieldOffset);
     }
 
     public final void setValueVolatile(final short value) {
-        UNSAFE.putShortVolatile(this, valueFieldOffset, value);
+        putShortVolatile(this, valueFieldOffset, value);
     }
 
     public final void set(final short value) {

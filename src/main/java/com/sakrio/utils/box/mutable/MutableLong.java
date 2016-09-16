@@ -110,10 +110,11 @@ package com.sakrio.utils.box.mutable;
 import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableLong;
-import sun.misc.Unsafe;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+
+import static com.sakrio.utils.UnsafeUtils.*;
 
 /**
  * Wrapper class
@@ -124,7 +125,6 @@ import java.nio.charset.StandardCharsets;
 public final class MutableLong extends Number
         implements BoxOnce<MutableLong> {
     protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(MutableLong.class, "value");
-    private static final Unsafe UNSAFE = UnsafeUtils.UNSAFE;
     /**
      * Value
      */
@@ -291,11 +291,11 @@ public final class MutableLong extends Number
     }
 
     public final long getValueVolatile() {
-        return UNSAFE.getLongVolatile(this, valueFieldOffset);
+        return getLongVolatile(this, valueFieldOffset);
     }
 
     public final void setValueVolatile(final long value) {
-        UNSAFE.putLongVolatile(this, valueFieldOffset, value);
+        putLongVolatile(this, valueFieldOffset, value);
     }
 
     public final void set(final long value) {
@@ -304,19 +304,19 @@ public final class MutableLong extends Number
 
     public final void setValueOrdered(
             final long value) {
-        UNSAFE.putOrderedLong(this, valueFieldOffset, (value));
+        putOrderedLong(this, valueFieldOffset, (value));
     }
 
     public final boolean compareAndSwapValue(final long expected,
                                              final long value) {
-        return UNSAFE.compareAndSwapLong(this,
+        return compareAndSwapLong(this,
                 valueFieldOffset,
                 (expected), (value));
     }
 
     public final long getAndSetValue(
             final long value) {
-        return UNSAFE.getAndSetLong(this,
+        return getAndSetLong(this,
                 valueFieldOffset,
                 value);
     }

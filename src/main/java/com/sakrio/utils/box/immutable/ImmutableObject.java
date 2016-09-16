@@ -110,8 +110,6 @@ import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.mutable.MutableObject;
 
-import static com.sakrio.utils.UnsafeUtils.getObjectVolatile;
-
 /**
  * Wrapper class
  *
@@ -144,10 +142,6 @@ public final class ImmutableObject<T>
 
     public final T get() {
         return value;
-    }
-
-    public final T getValueVolatile() {
-        return (T) getObjectVolatile(this, valueFieldOffset);
     }
 
     @Override

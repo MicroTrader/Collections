@@ -111,8 +111,6 @@ import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.mutable.MutableChar;
 
-import static com.sakrio.utils.UnsafeUtils.getCharVolatile;
-
 /**
  * Wrapper class
  *
@@ -145,10 +143,6 @@ public final class ImmutableChar extends Number
 
     public final char get() {
         return value;
-    }
-
-    public final char getValueVolatile() {
-        return getCharVolatile(this, valueFieldOffset);
     }
 
     @Override

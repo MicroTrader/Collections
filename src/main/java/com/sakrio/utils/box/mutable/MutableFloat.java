@@ -110,7 +110,8 @@ package com.sakrio.utils.box.mutable;
 import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableFloat;
-import sun.misc.Unsafe;
+
+import static com.sakrio.utils.UnsafeUtils.*;
 
 /**
  * Wrapper class
@@ -121,7 +122,6 @@ import sun.misc.Unsafe;
 public final class MutableFloat extends Number
         implements BoxOnce<MutableFloat> {
     protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(MutableFloat.class, "value");
-    private static final Unsafe UNSAFE = UnsafeUtils.UNSAFE;
     /**
      * Value
      */
@@ -153,11 +153,11 @@ public final class MutableFloat extends Number
     }
 
     public final float getValueVolatile() {
-        return UNSAFE.getFloatVolatile(this, valueFieldOffset);
+        return getFloatVolatile(this, valueFieldOffset);
     }
 
     public final void setValueVolatile(final float value) {
-        UNSAFE.putFloatVolatile(this, valueFieldOffset, value);
+        putFloatVolatile(this, valueFieldOffset, value);
     }
 
     public final void set(final float value) {
@@ -166,21 +166,21 @@ public final class MutableFloat extends Number
 
     public final void setValueOrdered(
             final float value) {
-        UNSAFE.putOrderedInt(this, valueFieldOffset, Float.floatToRawIntBits(value));
+        putOrderedFloat(this, valueFieldOffset, value);
     }
 
     public final boolean compareAndSwapValue(final float expected,
                                              final float value) {
-        return UNSAFE.compareAndSwapInt(this,
+        return compareAndSwapFloat(this,
                 valueFieldOffset,
-                Float.floatToRawIntBits(expected), Float.floatToRawIntBits(value));
+                expected, value);
     }
 
     public final float getAndSetValue(
             final float value) {
-        return Float.intBitsToFloat(UNSAFE.getAndSetInt(this,
+        return getAndSetFloat(this,
                 valueFieldOffset,
-                Float.floatToRawIntBits(value)));
+                value);
     }
 
     @Override

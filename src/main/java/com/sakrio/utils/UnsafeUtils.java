@@ -880,11 +880,11 @@ public class UnsafeUtils {
         return UNSAFE.compareAndSwapObject(object, fieldOffset, expected, value);
     }
 
-    public static <T> boolean compareAndSwapFloat(final T object, final long fieldOffset, final int expected, final int value) {
+    public static <T> boolean compareAndSwapFloat(final T object, final long fieldOffset, final float expected, final float value) {
         return compareAndSwapInt(object, fieldOffset, Float.floatToRawIntBits(expected), Float.floatToRawIntBits(value));
     }
 
-    public static <T> boolean compareAndSwapDouble(final T object, final long fieldOffset, final long expected, final long value) {
+    public static <T> boolean compareAndSwapDouble(final T object, final long fieldOffset, final double expected, final double value) {
         return compareAndSwapLong(object, fieldOffset, Double.doubleToRawLongBits(expected), Double.doubleToRawLongBits(value));
     }
 
@@ -893,7 +893,7 @@ public class UnsafeUtils {
     }
 
     public static <T> boolean CAS(final T object, final long fieldOffset, final float expected, final float value) {
-        return compareAndSwapInt(object, fieldOffset, Float.floatToRawIntBits(expected), Float.floatToRawIntBits(value));
+        return compareAndSwapFloat(object, fieldOffset, expected, value);
     }
 
     public static <T> boolean CAS(final T object, final long fieldOffset, final long expected, final long value) {
@@ -901,7 +901,7 @@ public class UnsafeUtils {
     }
 
     public static <T> boolean CAS(final T object, final long fieldOffset, final double expected, final double value) {
-        return compareAndSwapLong(object, fieldOffset, Double.doubleToRawLongBits(expected), Double.doubleToRawLongBits(value));
+        return compareAndSwapDouble(object, fieldOffset, expected, value);
     }
 
     public static <T, U, V> boolean CAS(final T object, final long fieldOffset, final U expected, final V value) {
@@ -913,7 +913,7 @@ public class UnsafeUtils {
     }
 
     public static boolean CAS(final float[] array, final long index, final float expected, final float value) {
-        return compareAndSwapInt(array, index, Float.floatToRawIntBits(expected), Float.floatToRawIntBits(value));
+        return compareAndSwapFloat(array, index, expected, value);
     }
 
     public static boolean CAS(final long[] array, final long index, final long expected, final long value) {
@@ -921,10 +921,94 @@ public class UnsafeUtils {
     }
 
     public static boolean CAS(final double[] array, final long index, final double expected, final double value) {
-        return compareAndSwapLong(array, index, Double.doubleToRawLongBits(expected), Double.doubleToRawLongBits(value));
+        return compareAndSwapDouble(array, index, expected, value);
     }
 
     public static <T, U extends T, V extends T> boolean CAS(final T[] array, final long index, final U expected, final V value) {
         return compareAndSwapObject(array, index, expected, value);
+    }
+
+    public static <T> int getAndSetInt(final T object, final long fieldOffset, final int value) {
+        return UNSAFE.getAndSetInt(object, fieldOffset, value);
+    }
+
+    public static <T> long getAndSetLong(final T object, final long fieldOffset, final long value) {
+        return UNSAFE.getAndSetLong(object, fieldOffset, value);
+    }
+
+    public static <S, T, U extends S> T getAndSetObject(final T object, final long fieldOffset, final U value) {
+        return (T) UNSAFE.getAndSetObject(object, fieldOffset, value);
+    }
+
+    public static <T> float getAndSetFloat(final T object, final long fieldOffset, final float value) {
+        return Float.intBitsToFloat(UNSAFE.getAndSetInt(object, fieldOffset, Float.floatToRawIntBits(value)));
+    }
+
+    public static <T> double getAndSetDouble(final T object, final long fieldOffset, final double value) {
+        return Double.longBitsToDouble(UNSAFE.getAndSetLong(object, fieldOffset, Double.doubleToRawLongBits(value)));
+    }
+
+    public static <T> int getAndSet(final T object, final long fieldOffset, final int value) {
+        return getAndSetInt(object, fieldOffset, value);
+    }
+
+    public static <T> long getAndSet(final T object, final long fieldOffset, final long value) {
+        return getAndSetLong(object, fieldOffset, value);
+    }
+
+    public static <S, T, U extends S> T getAndSet(final S object, final long fieldOffset, final U value) {
+        return (T) UNSAFE.getAndSetObject(object, fieldOffset, value);
+    }
+
+    public static <T> float getAndSet(final T object, final long fieldOffset, final float value) {
+        return getAndSetFloat(object, fieldOffset, value);
+    }
+
+    public static <T> double getAndSet(final T object, final long fieldOffset, final double value) {
+        return getAndSetDouble(object, fieldOffset, value);
+    }
+
+    public static <T> int getAndAddInt(final T object, final long fieldOffset, final int value) {
+        return UNSAFE.getAndAddInt(object, fieldOffset, value);
+    }
+
+    public static <T> long getAndAddLong(final T object, final long fieldOffset, final long value) {
+        return UNSAFE.getAndAddLong(object, fieldOffset, value);
+    }
+
+    public static <T> int getAndAdd(final T object, final long fieldOffset, final int value) {
+        return UNSAFE.getAndAddInt(object, fieldOffset, value);
+    }
+
+    public static <T> long getAndAdd(final T object, final long fieldOffset, final long value) {
+        return UNSAFE.getAndAddLong(object, fieldOffset, value);
+    }
+
+    public static int getAndSet(final int[] array, final long index, final int value) {
+        return getAndSetInt(array, index, value);
+    }
+
+    public static long getAndSet(final long[] array, final long index, final long value) {
+        return getAndSetLong(array, index, value);
+    }
+
+    public static <S, T extends S, U extends S> T getAndSet(final S[] array, final long index, final U value) {
+        return (T) UNSAFE.getAndSetObject(array, index, value);
+    }
+
+    public static float getAndSet(final float[] array, final long index, final float value) {
+        return getAndSetFloat(array, index, value);
+    }
+
+    public static double getAndSet(final double[] array, final long index, final double value) {
+        return getAndSetDouble(array, index, value);
+    }
+
+    public static int getAndAdd(final int[] array, final long index, final int value) {
+        return getAndAddInt(array, index, value);
+    }
+
+    public static long getAndAdd(final long[] array, final long index, final long value) {
+        return getAndAddLong(array, index, value);
     }
 }

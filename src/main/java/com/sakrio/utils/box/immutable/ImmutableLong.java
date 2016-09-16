@@ -110,8 +110,6 @@ import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.mutable.MutableLong;
 
-import static com.sakrio.utils.UnsafeUtils.getLongVolatile;
-
 /**
  * Wrapper class
  *
@@ -144,10 +142,6 @@ public final class ImmutableLong extends Number
 
     public final long get() {
         return value;
-    }
-
-    public final long getValueVolatile() {
-        return getLongVolatile(this, valueFieldOffset);
     }
 
     @Override

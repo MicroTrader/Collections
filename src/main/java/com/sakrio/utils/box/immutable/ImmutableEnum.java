@@ -111,8 +111,6 @@ import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.mutable.MutableEnum;
 
-import static com.sakrio.utils.UnsafeUtils.getObjectVolatile;
-
 /**
  * Wrapper class
  *
@@ -145,10 +143,6 @@ public final class ImmutableEnum<T extends Enum<T>> extends Number
 
     public final Enum get() {
         return value;
-    }
-
-    public final Enum getValueVolatile() {
-        return (Enum) getObjectVolatile(this, valueFieldOffset);
     }
 
     @Override

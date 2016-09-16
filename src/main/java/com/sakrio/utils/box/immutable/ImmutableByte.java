@@ -111,8 +111,6 @@ import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.mutable.MutableByte;
 
-import static com.sakrio.utils.UnsafeUtils.getByteVolatile;
-
 /**
  * Wrapper class
  *
@@ -145,10 +143,6 @@ public final class ImmutableByte extends Number
 
     public final byte get() {
         return value;
-    }
-
-    public final byte getValueVolatile() {
-        return getByteVolatile(this, valueFieldOffset);
     }
 
     @Override
