@@ -105,22 +105,19 @@
 
 package com.sakrio.array;
 
-import com.sakrio.utils.UnsafeAccess;
-import sun.misc.Unsafe;
+import com.sakrio.utils.UnsafeUtils;
 
 /**
  * Created by sirinath on 11/09/2016.
  */
 public class Array {
-    private static Unsafe UNSAFE = UnsafeAccess.UNSAFE;
-
     private final long[] lengths;
 
-    //private final Object array;
-
     public Array(final long[] lengths) {
-        this.lengths = lengths;
+        this.lengths = new long[(int) (lengths.length * UnsafeUtils.PADDING)];
+    }
 
-        UNSAFE.
+    public final void getLengths(final long[] lengths) {
+
     }
 }

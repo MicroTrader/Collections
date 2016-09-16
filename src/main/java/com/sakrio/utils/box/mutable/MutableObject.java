@@ -106,7 +106,7 @@
 
 package com.sakrio.utils.box.mutable;
 
-import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableObject;
 import sun.misc.Unsafe;
@@ -119,8 +119,8 @@ import sun.misc.Unsafe;
 @SuppressWarnings("serial")
 public final class MutableObject<T>
         implements BoxOnce<MutableObject<T>> {
-    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableObject.class, "value");
-    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(MutableObject.class, "value");
+    private static final Unsafe UNSAFE = UnsafeUtils.UNSAFE;
     /**
      * Value
      */

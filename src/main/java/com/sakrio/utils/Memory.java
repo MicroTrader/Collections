@@ -117,8 +117,6 @@ import java.util.function.LongConsumer;
 import static java.nio.ByteBuffer.allocateDirect;
 
 class MemoryFieldAddress {
-    protected static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
-
     private long address;
 
     public final long getAddress() {

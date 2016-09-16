@@ -107,7 +107,7 @@
 package com.sakrio.utils.box.mutable;
 
 
-import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableDouble;
 import sun.misc.Unsafe;
@@ -120,8 +120,8 @@ import sun.misc.Unsafe;
 @SuppressWarnings("serial")
 public final class MutableDouble extends Number
         implements BoxOnce<MutableDouble> {
-    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableDouble.class, "value");
-    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(MutableDouble.class, "value");
+    private static final Unsafe UNSAFE = UnsafeUtils.UNSAFE;
     /**
      * Value
      */

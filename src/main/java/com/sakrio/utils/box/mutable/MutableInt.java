@@ -107,7 +107,7 @@
 package com.sakrio.utils.box.mutable;
 
 
-import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableInt;
 import sun.misc.Unsafe;
@@ -123,8 +123,8 @@ import java.nio.charset.StandardCharsets;
 @SuppressWarnings("serial")
 public final class MutableInt extends Number
         implements BoxOnce<MutableInt> {
-    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableInt.class, "value");
-    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(MutableInt.class, "value");
+    private static final Unsafe UNSAFE = UnsafeUtils.UNSAFE;
     /**
      * Value
      */

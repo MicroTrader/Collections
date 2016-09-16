@@ -107,10 +107,11 @@
 package com.sakrio.utils.box.immutable;
 
 
-import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.mutable.MutableEnum;
-import sun.misc.Unsafe;
+
+import static com.sakrio.utils.UnsafeUtils.getObjectVolatile;
 
 /**
  * Wrapper class
@@ -120,8 +121,7 @@ import sun.misc.Unsafe;
 @SuppressWarnings("serial")
 public final class ImmutableEnum<T extends Enum<T>> extends Number
         implements BoxOnce<ImmutableEnum<T>> {
-    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(ImmutableEnum.class, "value");
-    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(ImmutableEnum.class, "value");
     /**
      * Value
      */
@@ -148,7 +148,7 @@ public final class ImmutableEnum<T extends Enum<T>> extends Number
     }
 
     public final Enum getValueVolatile() {
-        return (Enum) UNSAFE.getObjectVolatile(this, valueFieldOffset);
+        return (Enum) getObjectVolatile(this, valueFieldOffset);
     }
 
     @Override

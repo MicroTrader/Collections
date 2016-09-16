@@ -107,7 +107,7 @@
 package com.sakrio.utils.box.mutable;
 
 
-import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableEnum;
 import sun.misc.Unsafe;
@@ -120,8 +120,8 @@ import sun.misc.Unsafe;
 @SuppressWarnings("serial")
 public final class MutableEnum<T extends Enum<T>> extends Number
         implements BoxOnce<MutableEnum<T>> {
-    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableEnum.class, "value");
-    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(MutableEnum.class, "value");
+    private static final Unsafe UNSAFE = UnsafeUtils.UNSAFE;
     /**
      * Value
      */

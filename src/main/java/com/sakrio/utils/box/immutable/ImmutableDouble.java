@@ -107,10 +107,11 @@
 package com.sakrio.utils.box.immutable;
 
 
-import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.mutable.MutableDouble;
-import sun.misc.Unsafe;
+
+import static com.sakrio.utils.UnsafeUtils.getDoubleVolatile;
 
 /**
  * Wrapper class
@@ -120,8 +121,7 @@ import sun.misc.Unsafe;
 @SuppressWarnings("serial")
 public final class ImmutableDouble extends Number
         implements BoxOnce<ImmutableDouble> {
-    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(ImmutableDouble.class, "value");
-    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(ImmutableDouble.class, "value");
     /**
      * Value
      */
@@ -148,7 +148,7 @@ public final class ImmutableDouble extends Number
     }
 
     public final double getValueVolatile() {
-        return UNSAFE.getDoubleVolatile(this, valueFieldOffset);
+        return getDoubleVolatile(this, valueFieldOffset);
     }
 
     @Override

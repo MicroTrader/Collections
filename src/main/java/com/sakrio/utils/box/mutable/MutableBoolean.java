@@ -107,10 +107,11 @@
 package com.sakrio.utils.box.mutable;
 
 
-import com.sakrio.utils.UnsafeAccess;
+import com.sakrio.utils.UnsafeUtils;
 import com.sakrio.utils.box.BoxOnce;
 import com.sakrio.utils.box.immutable.ImmutableBoolean;
-import sun.misc.Unsafe;
+
+import static com.sakrio.utils.UnsafeUtils.getBooleanVolatile;
 
 /**
  * Wrapper class
@@ -120,8 +121,7 @@ import sun.misc.Unsafe;
 @SuppressWarnings("serial")
 public final class MutableBoolean extends Number
         implements BoxOnce<MutableBoolean> {
-    protected final static long valueFieldOffset = UnsafeAccess.getFieldOffset(MutableBoolean.class, "value");
-    private static final Unsafe UNSAFE = UnsafeAccess.UNSAFE;
+    protected final static long valueFieldOffset = UnsafeUtils.getObjectFieldOffset(MutableBoolean.class, "value");
     /**
      * Value
      */
@@ -152,11 +152,11 @@ public final class MutableBoolean extends Number
     }
 
     public final boolean getValueVolatile() {
-        return UNSAFE.getBooleanVolatile(this, valueFieldOffset);
+        return getBooleanVolatile(this, valueFieldOffset);
     }
 
     public final void setValueVolatile(final boolean value) {
-        UNSAFE.putBooleanVolatile(this, valueFieldOffset, value);
+        UnsafeUtils.putBooleanVolatile(this, valueFieldOffset, value);
     }
 
     public final void set(final boolean value) {
