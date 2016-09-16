@@ -105,10 +105,6 @@
 
 package com.sakrio.utils;
 
-import sun.misc.Cleaner;
-import sun.misc.Unsafe;
-import sun.nio.ch.DirectBuffer;
-
 import java.lang.reflect.Array;
 import java.nio.*;
 import java.nio.channels.FileChannel;
@@ -195,13 +191,13 @@ class MemoryAddressPad4 extends MemoryFieldArray {
 public class Memory extends MemoryAddressPad4 implements AutoCloseable {
     private final LongConsumer reAllocator;
 
-    private final CleaningProcess cleaner;
+    private final MemoryCleaner cleaner;
 
     public Memory(final FileChannel channel, final long bytes) {
         try {
             MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bytes);
             this.setBytes(buffer.capacity());
-            this.setAddress(((DirectBuffer) buffer).address());
+            this.setAddress(bufferAddress(buffer));
             this.setBuffer(buffer);
         } catch (Throwable t) {
             throw new RuntimeException("Exception turing file mapping", t);
@@ -210,7 +206,7 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
             try {
                 MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, newLengthInBytes);
                 this.setBytes(buffer.capacity());
-                this.setAddress(((DirectBuffer) buffer).address());
+                this.setAddress(bufferAddress(buffer));
                 this.setBuffer(buffer);
             } catch (Throwable t) {
                 throw new RuntimeException("Exception turing file mapping", t);
@@ -223,10 +219,10 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
         this.setBuffer(buffer);
 
         if (buffer.hasArray()) {
-            this.setAddress(Unsafe.ARRAY_BYTE_BASE_OFFSET);
+            this.setAddress(ARRAY_BYTE_BASE_OFFSET);
             this.setArray(buffer.array());
         } else if (buffer.isDirect())
-            this.setAddress(((DirectBuffer) buffer).address());
+            this.setAddress(bufferAddress(buffer));
         else
             throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
 
@@ -242,7 +238,7 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
                 newBuffer.put(buffer);
             } else if (buffer.isDirect()) {
                 newBuffer = allocateDirect((int) newLengthInBytes * Byte.BYTES);
-                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setAddress(bufferAddress(newBuffer));
                 this.setBytes(newBuffer.capacity() * Byte.BYTES);
                 newBuffer.put(buffer);
             } else
@@ -258,10 +254,10 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
         this.setBuffer(buffer);
 
         if (buffer.hasArray()) {
-            this.setAddress(Unsafe.ARRAY_CHAR_BASE_OFFSET);
+            this.setAddress(ARRAY_CHAR_BASE_OFFSET);
             this.setArray(buffer.array());
         } else if (buffer.isDirect())
-            this.setAddress(((DirectBuffer) buffer).address());
+            this.setAddress(bufferAddress(buffer));
         else
             throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
 
@@ -277,7 +273,7 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
                 newBuffer.put(buffer);
             } else if (buffer.isDirect()) {
                 newBuffer = ByteBuffer.allocateDirect((int) newLengthInBytes * Character.BYTES).asCharBuffer();
-                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setAddress(bufferAddress(newBuffer));
                 this.setBytes(newBuffer.capacity() * Character.BYTES);
                 newBuffer.put(buffer);
             } else
@@ -293,10 +289,10 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
         this.setBuffer(buffer);
 
         if (buffer.hasArray()) {
-            this.setAddress(Unsafe.ARRAY_DOUBLE_BASE_OFFSET);
+            this.setAddress(ARRAY_DOUBLE_BASE_OFFSET);
             this.setArray(buffer.array());
         } else if (buffer.isDirect())
-            this.setAddress(((DirectBuffer) buffer).address());
+            this.setAddress(bufferAddress(buffer));
         else
             throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
 
@@ -312,7 +308,7 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
                 newBuffer.put(buffer);
             } else if (buffer.isDirect()) {
                 newBuffer = ByteBuffer.allocateDirect((int) newLengthInBytes * Double.BYTES).asDoubleBuffer();
-                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setAddress(bufferAddress(newBuffer));
                 this.setBytes(newBuffer.capacity() * Double.BYTES);
                 newBuffer.put(buffer);
             } else
@@ -328,10 +324,10 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
         this.setBuffer(buffer);
 
         if (buffer.hasArray()) {
-            this.setAddress(Unsafe.ARRAY_LONG_BASE_OFFSET);
+            this.setAddress(ARRAY_LONG_BASE_OFFSET);
             this.setArray(buffer.array());
         } else if (buffer.isDirect())
-            this.setAddress(((DirectBuffer) buffer).address());
+            this.setAddress(bufferAddress(buffer));
         else
             throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
 
@@ -347,7 +343,7 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
                 newBuffer.put(buffer);
             } else if (buffer.isDirect()) {
                 newBuffer = ByteBuffer.allocateDirect((int) newLengthInBytes * Long.BYTES).asLongBuffer();
-                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setAddress(bufferAddress(newBuffer));
                 this.setBytes(newBuffer.capacity() * Long.BYTES);
                 newBuffer.put(buffer);
             } else
@@ -363,10 +359,10 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
         this.setBuffer(buffer);
 
         if (buffer.hasArray()) {
-            this.setAddress(Unsafe.ARRAY_FLOAT_BASE_OFFSET);
+            this.setAddress(ARRAY_FLOAT_BASE_OFFSET);
             this.setArray(buffer.array());
         } else if (buffer.isDirect())
-            this.setAddress(((DirectBuffer) buffer).address());
+            this.setAddress(bufferAddress(buffer));
         else
             throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
 
@@ -382,7 +378,7 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
                 newBuffer.put(buffer);
             } else if (buffer.isDirect()) {
                 newBuffer = ByteBuffer.allocateDirect((int) newLengthInBytes * Float.BYTES).asFloatBuffer();
-                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setAddress(bufferAddress(newBuffer));
                 this.setBytes(newBuffer.capacity() * Float.BYTES);
                 newBuffer.put(buffer);
             } else
@@ -398,10 +394,10 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
         this.setBuffer(buffer);
 
         if (buffer.hasArray()) {
-            this.setAddress(Unsafe.ARRAY_INT_BASE_OFFSET);
+            this.setAddress(ARRAY_INT_BASE_OFFSET);
             this.setArray(buffer.array());
         } else if (buffer.isDirect())
-            this.setAddress(((DirectBuffer) buffer).address());
+            this.setAddress(bufferAddress(buffer));
         else
             throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
 
@@ -417,7 +413,7 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
                 newBuffer.put(buffer);
             } else if (buffer.isDirect()) {
                 newBuffer = ByteBuffer.allocateDirect((int) newLengthInBytes * Integer.BYTES).asIntBuffer();
-                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setAddress(bufferAddress(newBuffer));
                 this.setBytes(newBuffer.capacity() * Integer.BYTES);
                 newBuffer.put(buffer);
             } else
@@ -433,10 +429,10 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
         this.setBuffer(buffer);
 
         if (buffer.hasArray()) {
-            this.setAddress(Unsafe.ARRAY_SHORT_BASE_OFFSET);
+            this.setAddress(ARRAY_SHORT_BASE_OFFSET);
             this.setArray(buffer.array());
         } else if (buffer.isDirect())
-            this.setAddress(((DirectBuffer) buffer).address());
+            this.setAddress(bufferAddress(buffer));
         else
             throw new IllegalArgumentException("Unknown ByteBuffer type. It is not direct and does not have an array.");
 
@@ -452,7 +448,7 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
                 newBuffer.put(buffer);
             } else if (buffer.isDirect()) {
                 newBuffer = ByteBuffer.allocateDirect((int) newLengthInBytes * Short.BYTES).asShortBuffer();
-                this.setAddress(((DirectBuffer) newBuffer).address());
+                this.setAddress(bufferAddress(newBuffer));
                 this.setBytes(newBuffer.capacity() * Short.BYTES);
                 newBuffer.put(buffer);
             } else
@@ -473,8 +469,8 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
             this.setAddress(address);
             this.setBytes(newLengthInBytes);
         };
-        this.cleaner = new CleaningProcess(this.getAddress());
-        Cleaner.create(this, this.cleaner);
+        this.cleaner = new MemoryCleaner(this.getAddress());
+        cleaner(this, this.cleaner);
     }
 
     private Memory(final Object array, final long address, final long bytes) {
@@ -493,39 +489,39 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
     }
 
     public Memory(final boolean[] array) {
-        this(array, Unsafe.ARRAY_BOOLEAN_BASE_OFFSET, array.length * Unsafe.ARRAY_BOOLEAN_INDEX_SCALE);
+        this(array, ARRAY_BOOLEAN_BASE_OFFSET, array.length * ARRAY_BOOLEAN_INDEX_SCALE);
     }
 
     public Memory(final char[] array) {
-        this(array, Unsafe.ARRAY_CHAR_BASE_OFFSET, array.length * Unsafe.ARRAY_CHAR_INDEX_SCALE);
+        this(array, ARRAY_CHAR_BASE_OFFSET, array.length * ARRAY_CHAR_INDEX_SCALE);
     }
 
     public Memory(final byte[] array) {
-        this(array, Unsafe.ARRAY_BYTE_BASE_OFFSET, array.length * Unsafe.ARRAY_BYTE_INDEX_SCALE);
+        this(array, ARRAY_BYTE_BASE_OFFSET, array.length * ARRAY_BYTE_INDEX_SCALE);
     }
 
     public Memory(final short[] array) {
-        this(array, Unsafe.ARRAY_SHORT_BASE_OFFSET, array.length * Unsafe.ARRAY_SHORT_INDEX_SCALE);
+        this(array, ARRAY_SHORT_BASE_OFFSET, array.length * ARRAY_SHORT_INDEX_SCALE);
     }
 
     public Memory(final int[] array) {
-        this(array, Unsafe.ARRAY_INT_BASE_OFFSET, array.length * Unsafe.ARRAY_INT_INDEX_SCALE);
+        this(array, ARRAY_INT_BASE_OFFSET, array.length * ARRAY_INT_INDEX_SCALE);
     }
 
     public Memory(final long[] array) {
-        this(array, Unsafe.ARRAY_LONG_BASE_OFFSET, array.length * Unsafe.ARRAY_LONG_INDEX_SCALE);
+        this(array, ARRAY_LONG_BASE_OFFSET, array.length * ARRAY_LONG_INDEX_SCALE);
     }
 
     public Memory(final float[] array) {
-        this(array, Unsafe.ARRAY_FLOAT_BASE_OFFSET, array.length * Unsafe.ARRAY_FLOAT_INDEX_SCALE);
+        this(array, ARRAY_FLOAT_BASE_OFFSET, array.length * ARRAY_FLOAT_INDEX_SCALE);
     }
 
     public Memory(final double[] array) {
-        this(array, Unsafe.ARRAY_DOUBLE_BASE_OFFSET, array.length * Unsafe.ARRAY_DOUBLE_INDEX_SCALE);
+        this(array, ARRAY_DOUBLE_BASE_OFFSET, array.length * ARRAY_DOUBLE_INDEX_SCALE);
     }
 
     public <T> Memory(final T[] array) {
-        this(array, Unsafe.ARRAY_OBJECT_BASE_OFFSET, array.length * Unsafe.ARRAY_OBJECT_INDEX_SCALE);
+        this(array, ARRAY_OBJECT_BASE_OFFSET, array.length * ARRAY_OBJECT_INDEX_SCALE);
     }
 
     /**
@@ -537,7 +533,7 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
         reAllocator.accept(newLengthInBytes);
     }
 
-    protected final CleaningProcess getCleaner() {
+    protected final MemoryCleaner getCleaner() {
         return cleaner;
     }
 
@@ -547,10 +543,10 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
             cleaner.close();
     }
 
-    private static final class CleaningProcess implements Runnable, AutoCloseable {
+    private static final class MemoryCleaner implements Runnable, AutoCloseable {
         private long address;
 
-        CleaningProcess(final long address) {
+        MemoryCleaner(final long address) {
             this.address = address;
         }
 

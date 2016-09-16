@@ -105,9 +105,12 @@
 
 package com.sakrio.utils;
 
+import sun.misc.Cleaner;
 import sun.misc.Unsafe;
+import sun.nio.ch.DirectBuffer;
 
 import java.lang.reflect.Field;
+import java.nio.Buffer;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 
@@ -166,6 +169,14 @@ public class UnsafeUtils {
         }
 
         return unsafe;
+    }
+
+    public static Cleaner cleaner(final Object object, final Runnable runnable) {
+        return Cleaner.create(object, runnable);
+    }
+
+    public static long bufferAddress(final Buffer buffer) {
+        return ((DirectBuffer) buffer).address();
     }
 
     public static void fullFence() {

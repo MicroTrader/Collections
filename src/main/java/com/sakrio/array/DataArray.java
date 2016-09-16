@@ -105,19 +105,21 @@
 
 package com.sakrio.array;
 
-import com.sakrio.utils.UnsafeUtils;
+import com.sakrio.utils.Memory;
 
 /**
  * Created by sirinath on 11/09/2016.
  */
-public class Array {
+public class DataArray {
     private final long[] lengths;
 
-    public Array(final long[] lengths) {
-        this.lengths = new long[(int) (lengths.length * UnsafeUtils.PADDING)];
-    }
+    private final Memory memory;
 
-    public final void getLengths(final long[] lengths) {
+    public DataArray(final long... lengths) {
+        final int len = lengths.length;
+        this.lengths = new long[len];
+        System.arraycopy(lengths, 0, this.lengths, 0, len);
 
+        memory = new Memory()
     }
 }
