@@ -114,42 +114,13 @@ import java.nio.Buffer;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 
-import static java.lang.System.arraycopy;
-
 /**
  * Created by sirin_000 on 03/10/2015.
  */
 public class UnsafeUtils {
     public static final int CACHE_PADDING = 17;
-
-    public static final int ARRAY_BOOLEAN_INDEX_SHIFT = Integer.SIZE - Integer.numberOfLeadingZeros(Unsafe.ARRAY_BOOLEAN_INDEX_SCALE) - 1;
-    public static final int ARRAY_BYTE_INDEX_SHIFT = Integer.SIZE - Integer.numberOfLeadingZeros(Unsafe.ARRAY_BYTE_INDEX_SCALE) - 1;
-    public static final int ARRAY_SHORT_INDEX_SHIFT = Integer.SIZE - Integer.numberOfLeadingZeros(Unsafe.ARRAY_SHORT_INDEX_SCALE) - 1;
-    public static final int ARRAY_CHAR_INDEX_SHIFT = Integer.SIZE - Integer.numberOfLeadingZeros(Unsafe.ARRAY_CHAR_INDEX_SCALE) - 1;
-    public static final int ARRAY_INT_INDEX_SHIFT = Integer.SIZE - Integer.numberOfLeadingZeros(Unsafe.ARRAY_INT_INDEX_SCALE) - 1;
-    public static final int ARRAY_LONG_INDEX_SHIFT = Integer.SIZE - Integer.numberOfLeadingZeros(Unsafe.ARRAY_LONG_INDEX_SCALE) - 1;
-    public static final int ARRAY_FLOAT_INDEX_SHIFT = Integer.SIZE - Integer.numberOfLeadingZeros(Unsafe.ARRAY_FLOAT_INDEX_SCALE) - 1;
-    public static final int ARRAY_DOUBLE_INDEX_SHIFT = Integer.SIZE - Integer.numberOfLeadingZeros(Unsafe.ARRAY_DOUBLE_INDEX_SCALE) - 1;
-    public static final int ARRAY_OBJECT_INDEX_SHIFT = Integer.SIZE - Integer.numberOfLeadingZeros(Unsafe.ARRAY_OBJECT_INDEX_SCALE) - 1;
-    public static final int ARRAY_BOOLEAN_BASE_OFFSET = Unsafe.ARRAY_BOOLEAN_BASE_OFFSET;
-    public static final int ARRAY_BYTE_BASE_OFFSET = Unsafe.ARRAY_BYTE_BASE_OFFSET;
-    public static final int ARRAY_SHORT_BASE_OFFSET = Unsafe.ARRAY_SHORT_BASE_OFFSET;
-    public static final int ARRAY_CHAR_BASE_OFFSET = Unsafe.ARRAY_CHAR_BASE_OFFSET;
-    public static final int ARRAY_INT_BASE_OFFSET = Unsafe.ARRAY_INT_BASE_OFFSET;
-    public static final int ARRAY_LONG_BASE_OFFSET = Unsafe.ARRAY_LONG_BASE_OFFSET;
-    public static final int ARRAY_FLOAT_BASE_OFFSET = Unsafe.ARRAY_FLOAT_BASE_OFFSET;
-    public static final int ARRAY_DOUBLE_BASE_OFFSET = Unsafe.ARRAY_DOUBLE_BASE_OFFSET;
-    public static final int ARRAY_OBJECT_BASE_OFFSET = Unsafe.ARRAY_OBJECT_BASE_OFFSET;
-    public static final int ARRAY_BOOLEAN_INDEX_SCALE = Unsafe.ARRAY_BOOLEAN_INDEX_SCALE;
-    public static final int ARRAY_BYTE_INDEX_SCALE = Unsafe.ARRAY_BYTE_INDEX_SCALE;
-    public static final int ARRAY_SHORT_INDEX_SCALE = Unsafe.ARRAY_SHORT_INDEX_SCALE;
-    public static final int ARRAY_CHAR_INDEX_SCALE = Unsafe.ARRAY_CHAR_INDEX_SCALE;
-    public static final int ARRAY_INT_INDEX_SCALE = Unsafe.ARRAY_INT_INDEX_SCALE;
-    public static final int ARRAY_LONG_INDEX_SCALE = Unsafe.ARRAY_LONG_INDEX_SCALE;
-    public static final int ARRAY_FLOAT_INDEX_SCALE = Unsafe.ARRAY_FLOAT_INDEX_SCALE;
-    public static final int ARRAY_DOUBLE_INDEX_SCALE = Unsafe.ARRAY_DOUBLE_INDEX_SCALE;
-    public static final int ARRAY_OBJECT_INDEX_SCALE = Unsafe.ARRAY_OBJECT_INDEX_SCALE;
     private static final Unsafe UNSAFE = getUnsafe();
+
     public static final int PAGE_SIZE = UNSAFE.pageSize();
 
     private static final Unsafe getUnsafe() {
@@ -292,239 +263,7 @@ public class UnsafeUtils {
     }
 
     public static void arrayCopy(final Object srcBase, final int srcPos, final Object destBase, final int destPos, final int length) {
-        arraycopy(srcBase, srcPos, destBase, destPos, length);
-    }
-
-    public static void copy(final boolean[] srcBase, final int srcPos, final boolean[] destBase, final int destPos, final int length) {
-        arraycopy(srcBase, srcPos, destBase, destPos, length);
-    }
-
-    public static void copy(final byte[] srcBase, final int srcPos, final byte[] destBase, final int destPos, final int length) {
-        arraycopy(srcBase, srcPos, destBase, destPos, length);
-    }
-
-    public static void copy(final short[] srcBase, final int srcPos, final short[] destBase, final int destPos, final int length) {
-        arraycopy(srcBase, srcPos, destBase, destPos, length);
-    }
-
-    public static void copy(final char[] srcBase, final int srcPos, final char[] destBase, final int destPos, final int length) {
-        arraycopy(srcBase, srcPos, destBase, destPos, length);
-    }
-
-    public static void copy(final int[] srcBase, final int srcPos, final int[] destBase, final int destPos, final int length) {
-        arraycopy(srcBase, srcPos, destBase, destPos, length);
-    }
-
-    public static void copy(final float[] srcBase, final int srcPos, final float[] destBase, final int destPos, final int length) {
-        arraycopy(srcBase, srcPos, destBase, destPos, length);
-    }
-
-    public static void copy(final long[] srcBase, final int srcPos, final long[] destBase, final int destPos, final int length) {
-        arraycopy(srcBase, srcPos, destBase, destPos, length);
-    }
-
-    public static void copy(final double[] srcBase, final int srcPos, final double[] destBase, final int destPos, final int length) {
-        arraycopy(srcBase, srcPos, destBase, destPos, length);
-    }
-
-    public static <T extends U, U> void copy(final T[] srcBase, final int srcPos, final U[] destBase, final int destPos, final int length) {
-        arraycopy(srcBase, srcPos, destBase, destPos, length);
-    }
-
-    public static int lengthInBytes(final boolean[] array) {
-        return ARRAY_BOOLEAN_BASE_OFFSET + array.length << ARRAY_BOOLEAN_INDEX_SHIFT;
-    }
-
-    public static int lengthInBytes(final byte[] array) {
-        return ARRAY_BYTE_BASE_OFFSET + array.length << ARRAY_BYTE_INDEX_SHIFT;
-    }
-
-    public static int lengthInBytes(final short[] array) {
-        return ARRAY_SHORT_BASE_OFFSET + array.length << ARRAY_SHORT_INDEX_SHIFT;
-    }
-
-    public static int lengthInBytes(final char[] array) {
-        return ARRAY_CHAR_BASE_OFFSET + array.length << ARRAY_CHAR_INDEX_SHIFT;
-    }
-
-    public static int lengthInBytes(final int[] array) {
-        return ARRAY_INT_BASE_OFFSET + array.length << ARRAY_INT_INDEX_SHIFT;
-    }
-
-    public static int lengthInBytes(final long[] array) {
-        return ARRAY_LONG_BASE_OFFSET + array.length << ARRAY_LONG_INDEX_SHIFT;
-    }
-
-    public static int lengthInBytes(final float[] array) {
-        return ARRAY_FLOAT_BASE_OFFSET + array.length << ARRAY_FLOAT_INDEX_SHIFT;
-    }
-
-    public static int lengthInBytes(final double[] array) {
-        return ARRAY_DOUBLE_BASE_OFFSET + array.length << ARRAY_DOUBLE_INDEX_SHIFT;
-    }
-
-    public static <T> int lengthInBytes(final T[] array) {
-        return ARRAY_OBJECT_BASE_OFFSET + array.length << ARRAY_OBJECT_INDEX_SHIFT;
-    }
-
-    public static int indexInBytes(final boolean[] array, final int index) {
-        return index << ARRAY_BOOLEAN_INDEX_SHIFT;
-    }
-
-    public static int indexInBytes(final byte[] array, final int index) {
-        return index << ARRAY_BYTE_INDEX_SHIFT;
-    }
-
-    public static int indexInBytes(final short[] array, final int index) {
-        return index << ARRAY_SHORT_INDEX_SHIFT;
-    }
-
-    public static int indexInBytes(final char[] array, final int index) {
-        return index << ARRAY_CHAR_INDEX_SHIFT;
-    }
-
-    public static int indexInBytes(final int[] array, final int index) {
-        return index << ARRAY_INT_INDEX_SHIFT;
-    }
-
-    public static int indexInBytes(final long[] array, final int index) {
-        return index << ARRAY_LONG_INDEX_SHIFT;
-    }
-
-    public static int indexInBytes(final float[] array, final int index) {
-        return index << ARRAY_FLOAT_INDEX_SHIFT;
-    }
-
-    public static int indexInBytes(final double[] array, final int index) {
-        return index << ARRAY_DOUBLE_INDEX_SHIFT;
-    }
-
-    public static <T> int indexInBytes(final T[] array, final int index) {
-        return index << ARRAY_OBJECT_INDEX_SHIFT;
-    }
-
-    public static int getIndexOffset(final boolean[] array, final int index) {
-        return ARRAY_BOOLEAN_BASE_OFFSET + index << ARRAY_BOOLEAN_INDEX_SHIFT;
-    }
-
-    public static int getIndexOffset(final byte[] array, final int index) {
-        return ARRAY_BYTE_BASE_OFFSET + index << ARRAY_BYTE_INDEX_SHIFT;
-    }
-
-    public static int getIndexOffset(final short[] array, final int index) {
-        return ARRAY_SHORT_BASE_OFFSET + index << ARRAY_SHORT_INDEX_SHIFT;
-    }
-
-    public static int getIndexOffset(final char[] array, final int index) {
-        return ARRAY_CHAR_BASE_OFFSET + index << ARRAY_CHAR_INDEX_SHIFT;
-    }
-
-    public static int getIndexOffset(final int[] array, final int index) {
-        return ARRAY_INT_BASE_OFFSET + index << ARRAY_INT_INDEX_SHIFT;
-    }
-
-    public static int getIndexOffset(final long[] array, final int index) {
-        return ARRAY_LONG_BASE_OFFSET + index << ARRAY_LONG_INDEX_SHIFT;
-    }
-
-    public static int getIndexOffset(final float[] array, final int index) {
-        return ARRAY_FLOAT_BASE_OFFSET + index << ARRAY_FLOAT_INDEX_SHIFT;
-    }
-
-    public static int getIndexOffset(final double[] array, final int index) {
-        return ARRAY_DOUBLE_BASE_OFFSET + index << ARRAY_DOUBLE_INDEX_SHIFT;
-    }
-
-    public static <T> int getIndexOffset(final T[] array, final int index) {
-        return ARRAY_OBJECT_BASE_OFFSET + index << ARRAY_OBJECT_INDEX_SHIFT;
-    }
-
-    public static void put(final boolean[] array, final int index, final boolean value) {
-        putBoolean(array, getIndexOffset(array, index), value);
-    }
-
-    public static void put(final byte[] array, final int index, final byte value) {
-        putByte(array, getIndexOffset(array, index), value);
-    }
-
-    public static void put(final short[] array, final int index, final short value) {
-        putShort(array, getIndexOffset(array, index), value);
-    }
-
-    public static void put(final char[] array, final int index, final char value) {
-        putChar(array, getIndexOffset(array, index), value);
-    }
-
-    public static void put(final int[] array, final int index, final int value) {
-        putInt(array, getIndexOffset(array, index), value);
-    }
-
-    public static void put(final float[] array, final int index, final float value) {
-        putFloat(array, getIndexOffset(array, index), value);
-    }
-
-    public static void put(final long[] array, final int index, final long value) {
-        putLong(array, getIndexOffset(array, index), value);
-    }
-
-    public static void put(final double[] array, final int index, final double value) {
-        putDouble(array, getIndexOffset(array, index), value);
-    }
-
-    public static <T, U extends T> void put(final T[] array, final int index, final U value) {
-        putObject(array, getIndexOffset(array, index), value);
-    }
-
-    public static void putVolatile(final boolean[] array, final int index, final boolean value) {
-        putBooleanVolatile(array, getIndexOffset(array, index), value);
-    }
-
-    public static void putVolatile(final byte[] array, final int index, final byte value) {
-        putByteVolatile(array, getIndexOffset(array, index), value);
-    }
-
-    public static void putVolatile(final short[] array, final int index, final short value) {
-        putShortVolatile(array, getIndexOffset(array, index), value);
-    }
-
-    public static void putVolatile(final char[] array, final int index, final char value) {
-        putCharVolatile(array, getIndexOffset(array, index), value);
-    }
-
-    public static void putVolatile(final int[] array, final int index, final int value) {
-        putIntVolatile(array, getIndexOffset(array, index), value);
-    }
-
-    public static void putVolatile(final float[] array, final int index, final float value) {
-        putFloatVolatile(array, getIndexOffset(array, index), value);
-    }
-
-    public static void putVolatile(final long[] array, final int index, final long value) {
-        putLongVolatile(array, getIndexOffset(array, index), value);
-    }
-
-    public static void putVolatile(final double[] array, final int index, final double value) {
-        putDoubleVolatile(array, getIndexOffset(array, index), value);
-    }
-
-    public static void putOrdered(final int[] array, final int index, final int value) {
-        putOrderedInt(array, getIndexOffset(array, index), value);
-    }
-
-    public static void putOrdered(final float[] array, final int index, final float value) {
-        putOrderedInt(array, getIndexOffset(array, index), Float.floatToRawIntBits(value));
-    }
-
-    public static void putOrdered(final long[] array, final int index, final long value) {
-        putOrderedLong(array, getIndexOffset(array, index), value);
-    }
-
-    public static void putOrdered(final double[] array, final int index, final double value) {
-        putOrderedLong(array, getIndexOffset(array, index), Double.doubleToRawLongBits(value));
-    }
-
-    public static <T, U extends T> void putOrdered(final T[] array, final int index, final U value) {
-        putOrderedObject(array, getIndexOffset(array, index), value);
+        System.arraycopy(srcBase, srcPos, destBase, destPos, length);
     }
 
     public static <T> void putBoolean(final T object, final long fieldOffset, final boolean value) {
@@ -711,114 +450,6 @@ public class UnsafeUtils {
         putOrderedObject(object, fieldOffset, value);
     }
 
-    public static boolean getBoolean(final boolean[] array, final int index) {
-        return UNSAFE.getBoolean(array, (long) getIndexOffset(array, index));
-    }
-
-    public static byte getByte(final byte[] array, final int index) {
-        return UNSAFE.getByte(array, (long) getIndexOffset(array, index));
-    }
-
-    public static short getShort(final short[] array, final int index) {
-        return UNSAFE.getShort(array, (long) getIndexOffset(array, index));
-    }
-
-    public static char getChar(final char[] array, final int index) {
-        return UNSAFE.getChar(array, (long) getIndexOffset(array, index));
-    }
-
-    public static int getInt(final int[] array, final int index) {
-        return UNSAFE.getInt(array, (long) getIndexOffset(array, index));
-    }
-
-    public static float getFloat(final float[] array, final int index) {
-        return UNSAFE.getFloat(array, (long) getIndexOffset(array, index));
-    }
-
-    public static long getLong(final long[] array, final int index) {
-        return UNSAFE.getLong(array, (long) getIndexOffset(array, index));
-    }
-
-    public static double getDouble(final double[] array, final int index) {
-        return UNSAFE.getDouble(array, (long) getIndexOffset(array, index));
-    }
-
-    public static <T, U extends T> U getObject(final T[] array, final int index) {
-        return (U) UNSAFE.getObject(array, (long) getIndexOffset(array, index));
-    }
-
-    public static boolean get(final boolean[] array, final int index) {
-        return getBoolean(array, getIndexOffset(array, index));
-    }
-
-    public static byte get(final byte[] array, final int index) {
-        return getByte(array, getIndexOffset(array, index));
-    }
-
-    public static short get(final short[] array, final int index) {
-        return getShort(array, getIndexOffset(array, index));
-    }
-
-    public static char get(final char[] array, final int index) {
-        return getChar(array, getIndexOffset(array, index));
-    }
-
-    public static int get(final int[] array, final int index) {
-        return getInt(array, getIndexOffset(array, index));
-    }
-
-    public static float get(final float[] array, final int index) {
-        return getFloat(array, getIndexOffset(array, index));
-    }
-
-    public static long get(final long[] array, final int index) {
-        return getLong(array, getIndexOffset(array, index));
-    }
-
-    public static double get(final double[] array, final int index) {
-        return getDouble(array, getIndexOffset(array, index));
-    }
-
-    public static <T, U extends T> U get(final T[] array, final int index) {
-        return (U) getObject(array, getIndexOffset(array, index));
-    }
-
-    public static boolean getVolatile(final boolean[] array, final int index) {
-        return getBooleanVolatile(array, getIndexOffset(array, index));
-    }
-
-    public static byte getVolatile(final byte[] array, final int index) {
-        return getByteVolatile(array, getIndexOffset(array, index));
-    }
-
-    public static short getVolatile(final short[] array, final int index) {
-        return getShortVolatile(array, getIndexOffset(array, index));
-    }
-
-    public static char getVolatile(final char[] array, final int index) {
-        return getCharVolatile(array, getIndexOffset(array, index));
-    }
-
-    public static int getVolatile(final int[] array, final int index) {
-        return getIntVolatile(array, getIndexOffset(array, index));
-    }
-
-    public static float getVolatile(final float[] array, final int index) {
-        return getFloatVolatile(array, getIndexOffset(array, index));
-    }
-
-    public static long getVolatile(final long[] array, final int index) {
-        return getLongVolatile(array, getIndexOffset(array, index));
-    }
-
-    public static double getVolatile(final double[] array, final int index) {
-        return getDoubleVolatile(array, getIndexOffset(array, index));
-    }
-
-    public static <T, U extends T> U getVolatile(final T[] array, final int index) {
-        return (U) getObjectVolatile(array, (long) getIndexOffset(array, index));
-    }
-
     public static <T> boolean getBoolean(final T object, final long fieldOffset) {
         return UNSAFE.getBoolean(object, fieldOffset);
     }
@@ -931,25 +562,6 @@ public class UnsafeUtils {
         return compareAndSwapObject(object, fieldOffset, expected, value);
     }
 
-    public static boolean CAS(final int[] array, final long index, final int expected, final int value) {
-        return compareAndSwapInt(array, index, expected, value);
-    }
-
-    public static boolean CAS(final float[] array, final long index, final float expected, final float value) {
-        return compareAndSwapFloat(array, index, expected, value);
-    }
-
-    public static boolean CAS(final long[] array, final long index, final long expected, final long value) {
-        return compareAndSwapLong(array, index, expected, value);
-    }
-
-    public static boolean CAS(final double[] array, final long index, final double expected, final double value) {
-        return compareAndSwapDouble(array, index, expected, value);
-    }
-
-    public static <T, U extends T, V extends T> boolean CAS(final T[] array, final long index, final U expected, final V value) {
-        return compareAndSwapObject(array, index, expected, value);
-    }
 
     public static <T> int getAndSetInt(final T object, final long fieldOffset, final int value) {
         return UNSAFE.getAndSetInt(object, fieldOffset, value);
@@ -980,7 +592,7 @@ public class UnsafeUtils {
     }
 
     public static <S, T, U extends S> T getAndSet(final S object, final long fieldOffset, final U value) {
-        return (T) UNSAFE.getAndSetObject(object, fieldOffset, value);
+        return (T) getAndSetObject(object, fieldOffset, value);
     }
 
     public static <T> float getAndSet(final T object, final long fieldOffset, final float value) {
@@ -1000,38 +612,10 @@ public class UnsafeUtils {
     }
 
     public static <T> int getAndAdd(final T object, final long fieldOffset, final int value) {
-        return UNSAFE.getAndAddInt(object, fieldOffset, value);
+        return getAndAddInt(object, fieldOffset, value);
     }
 
     public static <T> long getAndAdd(final T object, final long fieldOffset, final long value) {
-        return UNSAFE.getAndAddLong(object, fieldOffset, value);
-    }
-
-    public static int getAndSet(final int[] array, final long index, final int value) {
-        return getAndSetInt(array, index, value);
-    }
-
-    public static long getAndSet(final long[] array, final long index, final long value) {
-        return getAndSetLong(array, index, value);
-    }
-
-    public static <S, T extends S, U extends S> T getAndSet(final S[] array, final long index, final U value) {
-        return (T) UNSAFE.getAndSetObject(array, index, value);
-    }
-
-    public static float getAndSet(final float[] array, final long index, final float value) {
-        return getAndSetFloat(array, index, value);
-    }
-
-    public static double getAndSet(final double[] array, final long index, final double value) {
-        return getAndSetDouble(array, index, value);
-    }
-
-    public static int getAndAdd(final int[] array, final long index, final int value) {
-        return getAndAddInt(array, index, value);
-    }
-
-    public static long getAndAdd(final long[] array, final long index, final long value) {
-        return getAndAddLong(array, index, value);
+        return getAndAddLong(object, fieldOffset, value);
     }
 }

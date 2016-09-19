@@ -105,6 +105,10 @@
 
 package com.sakrio.utils;
 
+import sun.misc.Cleaner;
+
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.lang.reflect.Array;
 import java.nio.*;
 import java.nio.channels.FileChannel;
@@ -191,28 +195,67 @@ class MemoryAddressPad4 extends MemoryFieldArray {
 public class Memory extends MemoryAddressPad4 implements AutoCloseable {
     private final LongConsumer reAllocator;
 
-    private final MemoryCleaner cleaner;
+    private Cleaner cleaner = null;
 
-    public Memory(final FileChannel channel, final long bytes) {
+    private RandomAccessFile randomAccessFile = null;
+
+    public Memory(final String file, final long bytes) {
         try {
-            MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bytes);
-            this.setBytes(buffer.capacity());
-            this.setAddress(bufferAddress(buffer));
-            this.setBuffer(buffer);
-        } catch (Throwable t) {
-            throw new RuntimeException("Exception turing file mapping", t);
-        }
-        reAllocator = (final long newLengthInBytes) -> {
+            randomAccessFile = new RandomAccessFile(file, "rw");
+
+            this.cleaner = Cleaner.create(this, new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        randomAccessFile.close();
+                    } catch (IOException e) {
+                    }
+                }
+            });
+
+            final FileChannel channel = randomAccessFile.getChannel();
             try {
-                MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, newLengthInBytes);
+                final MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bytes);
                 this.setBytes(buffer.capacity());
                 this.setAddress(bufferAddress(buffer));
                 this.setBuffer(buffer);
             } catch (Throwable t) {
-                throw new RuntimeException("Exception turing file mapping", t);
+                throw new RuntimeException("Exception during file mapping", t);
+            }
+            reAllocator = (final long newLengthInBytes) -> {
+                try {
+                    final MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, newLengthInBytes);
+                    this.setBytes(buffer.capacity());
+                    this.setAddress(bufferAddress(buffer));
+                    this.setBuffer(buffer);
+                } catch (Throwable t) {
+                    throw new RuntimeException("Exception during file mapping", t);
+                }
+            };
+        } catch (Throwable t) {
+            throw new RuntimeException("Exception during file mapping", t);
+        }
+    }
+
+    public Memory(final FileChannel channel, final long bytes) {
+        try {
+            final MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bytes);
+            this.setBytes(buffer.capacity());
+            this.setAddress(bufferAddress(buffer));
+            this.setBuffer(buffer);
+        } catch (Throwable t) {
+            throw new RuntimeException("Exception during file mapping", t);
+        }
+        reAllocator = (final long newLengthInBytes) -> {
+            try {
+                final MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, newLengthInBytes);
+                this.setBytes(buffer.capacity());
+                this.setAddress(bufferAddress(buffer));
+                this.setBuffer(buffer);
+            } catch (Throwable t) {
+                throw new RuntimeException("Exception during file mapping", t);
             }
         };
-        cleaner = null;
     }
 
     public Memory(final ByteBuffer buffer) {
@@ -247,7 +290,6 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
             this.setBuffer(newBuffer);
             this.setBytes(newBuffer.capacity() * Byte.BYTES);
         };
-        cleaner = null;
     }
 
     public Memory(final CharBuffer buffer) {
@@ -282,7 +324,6 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
             this.setBuffer(newBuffer);
             this.setBytes(newBuffer.capacity() * Character.BYTES);
         };
-        cleaner = null;
     }
 
     public Memory(final DoubleBuffer buffer) {
@@ -317,7 +358,6 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
             this.setBuffer(newBuffer);
             this.setBytes(newBuffer.capacity() * Double.BYTES);
         };
-        cleaner = null;
     }
 
     public Memory(final LongBuffer buffer) {
@@ -352,7 +392,6 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
             this.setBuffer(newBuffer);
             this.setBytes(newBuffer.capacity() * Long.BYTES);
         };
-        cleaner = null;
     }
 
     public Memory(final FloatBuffer buffer) {
@@ -387,7 +426,6 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
             this.setBuffer(newBuffer);
             this.setBytes(newBuffer.capacity() * Float.BYTES);
         };
-        cleaner = null;
     }
 
     public Memory(final IntBuffer buffer) {
@@ -422,7 +460,6 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
             this.setBuffer(newBuffer);
             this.setBytes(newBuffer.capacity() * Integer.BYTES);
         };
-        cleaner = null;
     }
 
     public Memory(final ShortBuffer buffer) {
@@ -457,7 +494,6 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
             this.setBuffer(newBuffer);
             this.setBytes(newBuffer.capacity() * Short.BYTES);
         };
-        cleaner = null;
     }
 
     public Memory(final long bytes) {
@@ -465,12 +501,15 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
         this.setAddress(allocateMemory(bytes));
         reAllocator = (final long newLengthInBytes) -> {
             final long address = reallocateMemory(this.getAddress(), newLengthInBytes);
-            this.getCleaner().setAddress(address);
             this.setAddress(address);
             this.setBytes(newLengthInBytes);
+
+            if (this.cleaner != null)
+                this.cleaner.clear();
+
+            this.cleaner = cleaner(this, new MemoryCleaner(this.getAddress()));
         };
-        this.cleaner = new MemoryCleaner(this.getAddress());
-        cleaner(this, this.cleaner);
+        this.cleaner = cleaner(this, new MemoryCleaner(this.getAddress()));
     }
 
     private Memory(final Object array, final long address, final long bytes) {
@@ -485,7 +524,6 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
             this.setBytes(arrayIndexScale(arrayClass) * newLengthInBytes);
             System.arraycopy(currentArray, 0, newArray, 0, Array.getLength(currentArray));
         };
-        cleaner = null;
     }
 
     public Memory(final boolean[] array) {
@@ -533,14 +571,13 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
         reAllocator.accept(newLengthInBytes);
     }
 
-    protected final MemoryCleaner getCleaner() {
-        return cleaner;
-    }
-
     @Override
     public void close() throws Exception {
         if (cleaner != null)
-            cleaner.close();
+            cleaner.clean();
+
+        if (randomAccessFile != null)
+            randomAccessFile.close();
     }
 
     private static final class MemoryCleaner implements Runnable, AutoCloseable {
@@ -556,14 +593,6 @@ public class Memory extends MemoryAddressPad4 implements AutoCloseable {
                 freeMemory(this.address);
 
             this.address = 0;
-        }
-
-        final long getAddress() {
-            return address;
-        }
-
-        final void setAddress(final long address) {
-            this.address = address;
         }
 
         @Override

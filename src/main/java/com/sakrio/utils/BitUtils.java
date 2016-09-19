@@ -103,74 +103,17 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.array;
-
-import java.util.Arrays;
-
-import static com.sakrio.utils.UnsafeUtils.copy;
-import static com.sakrio.utils.UnsafeUtils.get;
+package com.sakrio.utils;
 
 /**
- * Created by sirinath on 11/09/2016.
+ * Created by sirinath on 19/09/2016.
  */
-public abstract class DataArray {
-    protected final int[] lengths;
-
-    protected final int dimensions;
-
-    protected final int elements;
-
-    public DataArray(final int... lengths) {
-        final int len = lengths.length;
-
-        this.dimensions = len;
-
-        this.lengths = new int[len];
-
-        if (len == 0) {
-            this.elements = 0;
-
-            return;
-        }
-
-        copy(lengths, this.lengths, len);
-
-        int elements = 1;
-
-        for (int i : lengths) {
-            if (i <= 0)
-                throw new IllegalArgumentException("Array dimensions should be a positive integer, but found: " + Arrays.toString(this.lengths));
-
-            elements *= i;
-        }
-
-        this.elements = elements;
+public class BitUtils {
+    public static long indexMask(final long num) {
+        return Long.SIZE - Long.numberOfLeadingZeros(num) - 1;
     }
 
-    protected static int rollPow2(final int mask, final int value) {
-        return value & mask;
-    }
-
-    protected static int roll(final int excess, final int mask, final int value) {
-        // value < 0 ? limit + value % limit : value % limit;
-        return (((value & mask) - excess) & mask) - excess;
-    }
-
-    public static int sumOfProducts(final int[] array1, final int[] array2) {
-        final int len = array1.length;
-
-        if (array2.length != len)
-            throw new IllegalArgumentException("Array lengths should be equal: " + array1.length + " vs " + array2.length);
-
-        int result = 0;
-        for (int i = 0; i < len; i++) {
-            result += get(array1, i) * get(array2, i);
-        }
-
-        return result;
-    }
-
-    public final int getElements() {
-        return elements;
+    public static int indexMask(final int num) {
+        return Integer.SIZE - Integer.numberOfLeadingZeros(num) - 1;
     }
 }
