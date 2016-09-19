@@ -103,61 +103,56 @@
  * _______________________________________________________________________________
  */
 
-package com.sakrio.array;
+package com.sakrio.utils;
 
-import java.util.Arrays;
-
-import static com.sakrio.utils.ArrayUtils.copy;
-import static com.sakrio.utils.BitUtils.rollMask;
-
+import static com.sakrio.utils.ArrayUtils.get;
 
 /**
- * Created by sirinath on 11/09/2016.
+ * Created by sirianth on 19/09/2016.
  */
-public abstract class DataArray {
-    protected final int[] lengths;
-
-    protected final int[] masks;
-
-    protected final int dimensions;
-
-    protected final int elements;
-
-    public DataArray(final int... lengths) {
-        final int len = lengths.length;
-
-        this.dimensions = len;
-
-        this.lengths = new int[len];
-
-        this.masks = new int[len];
-
-        if (len == 0) {
-            this.elements = 0;
-
-            return;
-        }
-
-        copy(lengths, this.lengths, len);
-
-        int elements = 1;
-
-        int idx = 0;
-        for (int length : lengths) {
-            if (length <= 0)
-                throw new IllegalArgumentException("Array dimensions should be a positive integer, but found: " + Arrays.toString(this.lengths));
-
-            elements *= length;
-
-            masks[idx] = rollMask(length);
-
-            idx++;
-        }
-
-        this.elements = elements;
+public class Utils {
+    public static int rollPow2(final int mask, final int value) {
+        return value & mask;
     }
 
-    public final int getElements() {
-        return elements;
+    public static int roll(final int excess, final int mask, final int value) {
+        // value < 0 ? limit + value % limit : value % limit;
+        return (((value & mask) - excess) & mask) - excess;
+    }
+
+    public static int sumOfProducts(final int[] array1, final int[] array2) {
+        final int len1 = array1.length;
+        final int len2 = array2.length;
+
+        final int lenMax;
+        final int lenMin;
+
+        final int[] arrayMax;
+        final int[] arrayMin;
+
+        if (len1 > len2) {
+            lenMax = len1;
+            lenMin = len2;
+
+            arrayMax = array1;
+            arrayMin = array2;
+        } else {
+            lenMax = len2;
+            lenMin = len1;
+
+            arrayMax = array2;
+            arrayMin = array1;
+        }
+
+        int result = 0;
+        for (int i = 0; i < lenMin; i++) {
+            result += get(arrayMin, i) * get(arrayMax, i);
+        }
+
+        for (int i = lenMin; i < lenMax; i++) {
+            result += get(arrayMax, i);
+        }
+
+        return result;
     }
 }

@@ -109,11 +109,11 @@ package com.sakrio.utils;
  * Created by sirinath on 19/09/2016.
  */
 public class BitUtils {
-    public static long indexMask(final long num) {
+    public static long rollMask(final long num) {
         return Long.SIZE - Long.numberOfLeadingZeros(num) - 1;
     }
 
-    public static int indexMask(final int num) {
+    public static int rollMask(final int num) {
         return Integer.SIZE - Integer.numberOfLeadingZeros(num) - 1;
     }
 }
