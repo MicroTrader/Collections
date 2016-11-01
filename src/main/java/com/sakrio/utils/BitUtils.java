@@ -116,4 +116,12 @@ public class BitUtils {
     public static int rollMask(final int num) {
         return Integer.SIZE - Integer.numberOfLeadingZeros(num) - 1;
     }
+
+    public static boolean isPowerOf2(final int num) {
+        return (num & (num - 1)) == 0;
+    }
+
+    public static boolean isPowerOf2(final long num) {
+        return (num & (num - 1)) == 0;
+    }
 }
