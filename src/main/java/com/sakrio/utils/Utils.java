@@ -105,8 +105,6 @@
 
 package com.sakrio.utils;
 
-import static com.sakrio.utils.ArrayUtils.get;
-
 /**
  * Created by sirianth on 19/09/2016.
  */
@@ -115,44 +113,11 @@ public class Utils {
         return value & mask;
     }
 
-    public static int roll(final int excess, final int mask, final int value) {
-        // value < 0 ? limit + value % limit : value % limit;
-        return (((value & mask) - excess) & mask) - excess;
+    public static int rollPositive(final int limit, final int value) {
+        return value % limit;
     }
 
-    public static int sumOfProducts(final int[] array1, final int[] array2) {
-        final int len1 = array1.length;
-        final int len2 = array2.length;
-
-        final int lenMax;
-        final int lenMin;
-
-        final int[] arrayMax;
-        final int[] arrayMin;
-
-        if (len1 > len2) {
-            lenMax = len1;
-            lenMin = len2;
-
-            arrayMax = array1;
-            arrayMin = array2;
-        } else {
-            lenMax = len2;
-            lenMin = len1;
-
-            arrayMax = array2;
-            arrayMin = array1;
-        }
-
-        int result = 0;
-        for (int i = 0; i < lenMin; i++) {
-            result += get(arrayMin, i) * get(arrayMax, i);
-        }
-
-        for (int i = lenMin; i < lenMax; i++) {
-            result += get(arrayMax, i);
-        }
-
-        return result;
+    public static int rollNegative(final int limit, final int value) {
+        return limit + (value % limit);
     }
 }
